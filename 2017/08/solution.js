@@ -2,7 +2,7 @@
  * https://adventofcode.com/2017/day/8
  */
 
-const input = 'input.txt';
+const input = '2017/08/input.txt';
 
 const fs = require('fs'),
     _ = require('underscore'),
@@ -16,7 +16,6 @@ const fs = require('fs'),
  * target operation amount compareTarget comparator compareAmount
  */
 
-// Populate a command array
 let instructions = [];
 for (let line of lines) {
     const re = /(\w+) ([dec,inc]+) ([-\d]+) if (\w+) ([><!=]+) ([-\d]+)/;
@@ -35,59 +34,60 @@ for (let line of lines) {
 }
 
 let registers = {};
+let highest = 0;
 
-//first handle the conditional
-
-_.each(instructions, (instruction) => {
-    if (registers[instruction.compareTarget]==undefined){
-            console.log('compareTarget created')
-            registers[instruction.compareTarget]=0;
-        }
+for (let instruction of instructions) {
+    if (registers[instruction.compareTarget] === undefined) {
+        registers[instruction.compareTarget] = 0;
+    }
+    let follow = false;
     switch (instruction.comparator) {
         case '>':
-            if (instruction.compareTarget > instruction.compareAmount) followInstruction(instruction);
-            
+            follow = registers[instruction.compareTarget] > instruction.compareAmount;
             break;
         case '>=':
-            if (instruction.compareTarget >= instruction.compareAmount) followInstruction(instruction);
+            follow = registers[instruction.compareTarget] >= instruction.compareAmount;
             break;
         case '<':
-            if (instruction.compareTarget < instruction.compareAmount) followInstruction(instruction);
+            follow = registers[instruction.compareTarget] < instruction.compareAmount;
             break;
         case '<=':
-            if (instruction.compareTarget <= instruction.compareAmount) followInstruction(instruction);
+            follow = registers[instruction.compareTarget] <= instruction.compareAmount;
             break;
         case '==':
-            if (instruction.compareTarget == instruction.compareAmount) followInstruction(instruction);
+            follow = registers[instruction.compareTarget] == instruction.compareAmount;
             break;
         case '!=':
-            if (instruction.compareTarget != instruction.compareAmount) followInstruction(instruction);
+            follow = registers[instruction.compareTarget] != instruction.compareAmount;
             break;
         default:
             // code
-            console.log(instruction.comparator + 'not found!');
+            console.error(instruction.comparator + ' not found!');
     }
-    
-    function followInstruction(instruction){
-        if (registers[instruction.target]==undefined){
-            registers[instruction.target]=0;
+    if (follow) followInstruction(instruction);
+
+    function followInstruction(instruction) {
+        if (registers[instruction.target] === undefined) {
+            registers[instruction.target] = 0;
         }
         switch (instruction.operation) {
             case 'inc':
-                registers[instruction.target]+=instruction.amount;
+                //console.log(`Increasing ${instruction.target} by ${instruction.amount}...`);
+                registers[instruction.target] += instruction.amount;
                 break;
             case 'dec':
-                registers[instruction.target]-=instruction.amount;
+                //console.log(`Decreasing ${instruction.target} by ${instruction.amount}...`);
+                registers[instruction.target] -= instruction.amount;
                 break;
             default:
-                // code
-        }    
-    
+                console.error('Cannot find instruction.')
+        }
+        if (registers[instruction.target] > highest) highest = registers[instruction.target];
     }
-})
+}
 
-console.log(registers);
+//console.log(registers);
 
 const max = _.max(_.values(registers));
-console.log(max);
-console.log(instructions);
+console.log(`Part 1: What is the largest value in any register after completing the instructions in your puzzle input? Answer: ${max}`);
+console.log(`Part 2: The highest value held in any register during this process. Answer: ${highest}`);
