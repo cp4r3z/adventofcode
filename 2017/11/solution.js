@@ -19,7 +19,23 @@ sw +--+ se
   / s  \
 */
 
-let offset = {ns: 0, we: 0};
+function getSteps() {
+    //console.log(offset);
+    let up = Math.abs(offset.ns);
+    const over = Math.abs(offset.we);
+    if (up > over) {
+        up -= over / 2
+        return up;
+    }
+    else {
+        return over;
+    }
+
+}
+
+let offset = { ns: 0, we: 0 };
+let lastSteps = 0;
+let maxSteps = 0;
 
 _.each(directions, (direction) => {
     switch (direction) {
@@ -48,6 +64,12 @@ _.each(directions, (direction) => {
         default:
             console.error('Here there be monsters.');
     }
+    lastSteps = getSteps();
+    if (lastSteps > maxSteps) maxSteps = lastSteps;
 });
 
-console.log(offset);
+// console.log(offset);
+// console.log(lastSteps);
+// console.log(maxSteps);
+
+console.log(`Part 1: The child was last ${lastSteps} steps away from the start.\nPart 2: The child had traveled as much as ${maxSteps} steps.`)
