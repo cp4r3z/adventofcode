@@ -2,32 +2,31 @@
  * https://adventofcode.com/2017/day/13
  */
 
-const input = 'input.txt';
+const input = __dirname + '\\inputt.txt';
 
 const fs = require('fs'),
     _ = require('underscore');
 
 const file = fs.readFileSync(input, "utf8"),
-    lines = file.split("\n");
+    lines = file.split("\n"),
+    total = 7;
 
-let layers = Array(91).fill(1),
-    states = Array(91).fill(1),
-    caught = _.range(91);
+let layers = Array(total).fill(1),
+    states = Array(total).fill(1),
+    caught = _.range(total);
 
 const re = /(\d+): (\d+)/;
 for (let line of lines) {
     layers[line.match(re)[1]] = parseInt(line.match(re)[2]);
 }
+caught = caught.map((a, i) => a * layers[i]);
 
-//console.log(layers);
-
-for (var i = 0; i <= 90; i++) {
-    if (states[i] == 1 && layers[i] != 1) {
-        // caught on line one
-        caught[i] = i * layers[i];
-    }
-    else {
+for (var i = 0; i <= layers.length; i++) {
+    // Move packet into layer and determine if you're caught.
+    if (states[i] !== 1 || layers[i] === 1) {
         caught[i] = 0;
+    } else {
+        console.log(`Caught at ${i}!`)
     }
     for (var j = 0; j < states.length; j++) {
         states[j] = states[j] + 1;
