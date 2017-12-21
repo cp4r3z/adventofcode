@@ -2,35 +2,33 @@
  * https://adventofcode.com/2017/day/13
  */
 
-function scan(states, goinup, index) {
-    let states2 = states.slice();
-    let goinup2 = goinup.slice();
+function scan(state, goinup, index) {
     if (layers[index] !== 1) {
-        if (goinup2[index]) {
-            if (states2[index] == 1) {
+        if (goinup) {
+            if (state == 1) {
                 //go down
-                goinup2[index] = false;
-                states2[index] = states2[index] + 1;
+                goinup = false;
+                state++;
             }
             else {
-                states2[index] = states2[index] - 1;
+                state--;
             }
         }
         else {
             //goindown
-            if (states2[index] == layers[index]) {
+            if (state == layers[index]) {
                 //go up
-                goinup2[index] = true;
-                states2[index] = states2[index] - 1;
+                goinup = true;
+                state--;
             }
             else {
-                states2[index] = states2[index] + 1;
+                state++;
             }
         }
     }
     let out = {};
-    out.states = states2;
-    out.goinup = goinup2;
+    out.state = state;
+    out.goinup = goinup;
     return out;
 }
 
@@ -53,9 +51,9 @@ function getSeverity(states, goinup) {
         }
         // Increment scanner
         for (let j = 0; j < total; j++) {
-            let scanned = scan(states2, goinup2, j);
-            states2 = scanned.states;
-            goinup2 = scanned.goinup;
+            const scanned = scan(states2[j], goinup2[j], j);
+            states2[j] = scanned.state;
+            goinup2[j] = scanned.goinup;
         }
     }
 
@@ -91,9 +89,9 @@ while (!foundSecurePath) {
     if (getSeverity(states, goinup) > 0) {
         // Increment scanner
         for (let j = 0; j < total; j++) {
-            let scanned = scan(states, goinup, j);
-            states = scanned.states;
-            goinup = scanned.goinup;
+            const scanned = scan(states[j], goinup[j], j);
+            states[j] = scanned.state;
+            goinup[j] = scanned.goinup;
         }
         delay++;
         if (delay >= printDelay) {
