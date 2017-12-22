@@ -2,48 +2,40 @@
  * https://adventofcode.com/2017/day/13
  */
 
+const fs = require('fs');
+
+// Not needed for Solution 2
 function getSeverity(delay) {
-    return layers.reduce((acc, cur, i) => acc + ((delay + i) % (cur * 2 - 2) === 0 ? cur * i : 0), 0);
+    return layers.reduce((acc, len, pos) => acc + ((delay + pos) % (len * 2 - 2) === 0 ? len * pos : 0), 0);
 }
 
-const input = 'inputt.txt';
+// Determines whether or not you're caught at a given delay
+function gotCaught(delay) {
+    return layers.reduce((acc, len, pos) => acc + ((delay + pos) % (len * 2 - 2) === 0 ? true : false), 0);
+}
 
-const fs = require('fs'),
-    _ = require('underscore');
-
-const file = fs.readFileSync(input, "utf8"),
+const input = 'input.txt',
+    file = fs.readFileSync(input, "utf8"),
     lines = file.split("\n"),
-    total = 7;
+    total = 91; // Explicitly set to the last value of the input, because it's just easier.
 
+// Populate the layer array
 let layers = Array(total).fill(1);
 
 const re = /(\d+): (\d+)/;
 for (let line of lines) {
-    layers[line.match(re)[1]] = parseInt(line.match(re)[2]);
+    layers[line.match(re)[1]] = parseInt(line.match(re)[2], 10);
 }
 
-let delay = 0;
-let printDelay = 0;
-let foundSecurePath = false;
+// Loop until you find a delay in which you're not caught
+let delay = 0,
+    foundSecurePath = false;
 
 while (!foundSecurePath) {
-    //console.log(getSeverity(states, goinup));
-    //let test = getSeverity(delay);
-    console.log(getSeverity(delay));
-    if (getSeverity(delay) === 0) {
+    //console.log(getSeverity(delay));
+    if (!gotCaught(delay)) {
         foundSecurePath = true;
     }
-    else {
-        delay++;
-        // if (delay >= printDelay) {
-        //     console.log(`Delay: ${delay}`);
-        //     printDelay += 10000;
-        // }
-    }
+    else delay++;
 }
 console.log('Delay: ' + delay);
-//144 too low
-//33199 too low
-//33199 * 91 = 3021109 still not right
-//171429 is not right.
-//171428 is not right.
