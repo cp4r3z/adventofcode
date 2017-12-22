@@ -32,6 +32,17 @@ function scan(state, goinup, index) {
     return out;
 }
 
+function getSeverity2(i) {
+    return layers.reduce((acc, cur, ind) => {
+        let caught = 0;
+        if ((i + ind) % (cur * 2 - 2) === 0) {
+            console.log(`Sev2 Caught at ${ind}!`);
+            caught = cur * ind;
+        }
+        return acc + caught;
+    }, 0)
+}
+
 function getSeverity(states, goinup) {
 
     let caught2 = _.range(total);
@@ -46,8 +57,8 @@ function getSeverity(states, goinup) {
             caught2[i] = 0;
         }
         else {
-            //console.log(`Caught at ${i}!`)
-            break; // Doesn't matter the exact severity in solution 2.
+            console.log(`Caught at ${i}!`)
+            //break; // Doesn't matter the exact severity in solution 2.
         }
         // Increment scanner
         for (let j = 0; j < total; j++) {
@@ -61,7 +72,7 @@ function getSeverity(states, goinup) {
     return caught2.reduce((a, b) => a + b);
 }
 
-const input = 'input.txt';
+const input = 'inputt.txt';
 
 const fs = require('fs'),
     _ = require('underscore');
@@ -86,6 +97,8 @@ let printDelay = 0;
 let foundSecurePath = false;
 
 while (!foundSecurePath) {
+    console.log(getSeverity(states, goinup));
+    console.log(getSeverity2(delay));
     if (getSeverity(states, goinup) > 0) {
         // Increment scanner
         for (let j = 0; j < total; j++) {
