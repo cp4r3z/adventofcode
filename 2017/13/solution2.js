@@ -2,18 +2,18 @@
  * https://adventofcode.com/2017/day/13
  */
 
-function getSeverity(i) {
-    return layers.reduce((acc, cur, ind) => acc + ((i + ind) % (cur * 2 - 2) === 0 ? cur * ind : 0), 0);
+function getSeverity(delay) {
+    return layers.reduce((acc, cur, i) => acc + ((delay + i) % (cur * 2 - 2) === 0 ? cur * i : 0), 0);
 }
 
-const input = 'input.txt';
+const input = 'inputt.txt';
 
 const fs = require('fs'),
     _ = require('underscore');
 
 const file = fs.readFileSync(input, "utf8"),
     lines = file.split("\n"),
-    total = 91;
+    total = 7;
 
 let layers = Array(total).fill(1);
 
@@ -28,17 +28,17 @@ let foundSecurePath = false;
 
 while (!foundSecurePath) {
     //console.log(getSeverity(states, goinup));
-    let test = getSeverity(delay);
-    //console.log(getSeverity(delay));
+    //let test = getSeverity(delay);
+    console.log(getSeverity(delay));
     if (getSeverity(delay) === 0) {
         foundSecurePath = true;
     }
     else {
         delay++;
-        if (delay >= printDelay) {
-            console.log(`Delay: ${delay}`);
-            printDelay += 10000;
-        }
+        // if (delay >= printDelay) {
+        //     console.log(`Delay: ${delay}`);
+        //     printDelay += 10000;
+        // }
     }
 }
 console.log('Delay: ' + delay);
