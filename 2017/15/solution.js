@@ -11,7 +11,7 @@ const fA = 16807,
 let judgeA, judgeB;
 let cA = 0,
     cB = 0;
-while (cA <= 5e6 && cB <= 5e6) {
+while (cA <= 5e6 || cB <= 5e6) {
     const a = ((genA * fA) % dv),
         b = ((genB * fB) % dv);
 
@@ -28,7 +28,7 @@ while (cA <= 5e6 && cB <= 5e6) {
             judgeB = b.toString(2).slice(-16);
             cB++;
         }
-        if (judgeA == judgeB) count++;
+        if (judgeA == judgeB && cA==cB) count++;
     }
 
     genA = a;
