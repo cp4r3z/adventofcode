@@ -22,4 +22,25 @@ function matchesCount(multiple) {
         .reduce((count, line) => count + (line ? 1 : 0));
 }
 
-console.log(`Answer: ${matchesCount(2) * matchesCount(3)}`);
+console.log(`Solution 1: ${matchesCount(2) * matchesCount(3)}`);
+
+function arraysOffByOne(targetArray, compareArray) {
+    const matchArray = targetArray
+        // Compare both arrays and reduce to number of matches
+        .map((cur, i, a) => cur != compareArray[i])
+        .reduce((acc, cur) => acc + (cur ? 1 : 0));
+    if (matchArray == 1) {
+        return targetArray.reduce((acc, cur, i) => acc + ((cur == compareArray[i]) ? cur : ''));
+    }
+    else return false;
+}
+
+for (var i = 0; i < lines.length; i++) {
+    for (var j = i + 1; j < lines.length; j++) {
+        const box = arraysOffByOne(lines[i], lines[j]);
+        if (box) {
+            console.log(`Solution 2: ${box}`);
+            break;
+        }
+    }
+}
