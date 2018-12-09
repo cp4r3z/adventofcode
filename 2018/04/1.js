@@ -20,7 +20,6 @@ const sleepiestMinute = getSleepiestMinute(sleepiestGuard.guardId, minutesAsleep
 console.log(`Sleepiest Minute: ${sleepiestMinute.minute}`);
 
 // Answer
-// 55043 is too high
 console.log(`Answer: ${parseInt(sleepiestGuard.guardId,10)*parseInt(sleepiestMinute.minute,10)}`);
 
 //sortedEntries.forEach(line => console.log(`${line.time.timestamp} ${line.event}`));
@@ -83,20 +82,22 @@ function assignGuard(currentValue, index, array) {
 }
 
 function entriesToMinutes(_sortedEntries) {
-    const reGuard = /^Guard #(\d+)/g;
-    const reSleepStart = /falls/g;
-    const reSleepEnd = /wakes/g;
+    const reGuard = /Guard #(\d+)/;
+    const reSleepStart = /falls/;
+    const reSleepEnd = /wakes/;
 
     let minutesArray = [];
     let guardId = null;
     let timeStart = null;
     for (let entry of _sortedEntries) {
-        const result = reGuard.exec(entry.event);
+        let result = null;
+        result = reGuard.exec(entry.event);
         if (result !== null) {
             guardId = result[1];
         }
         else {
-            const result1 = reSleepStart.exec(entry.event);
+            let result1 = null;
+            result1 = reSleepStart.exec(entry.event);
             if (result1 !== null) {
                 timeStart = entry.time;
             }
