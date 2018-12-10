@@ -148,7 +148,9 @@ function getSleepiestMinute(_guardId, _minutesArray) {
     const guardMinutesArray = _minutesArray.filter(cur => cur.guardId == _guardId);
 
     let minutesOfMinutes = [];
-    guardMinutesArray.forEach(countMinutesSleep);
+    //guardMinutesArray.forEach(countMinutesSleep);
+    // PArt 2: 23264 is too low.
+    _minutesArray.forEach(countMinutesSleep);
 
     let sleepiestMinute = { minute: null, minutes: null };
 
