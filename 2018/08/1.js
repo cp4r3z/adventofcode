@@ -4,52 +4,58 @@
 
 const fs = require('fs');
 
-const input = 'input_s.txt';
+const input = 'input.txt';
 const file = fs.readFileSync(input, 'utf8');
 const inputArr = file.split(' ');
 
-//inputArr.forEach(each => console.log(each));
-console.log(inputArr.join(" "));
+console.log(inputArr.join(","));
 const test = rChild(inputArr);
-console.log(test.childMeta.join(' '));
+const metadata = test.childMeta.join(' + ');
+const checksum = test.childMeta.reduce((acc, cur) => parseInt(acc, 10) + parseInt(cur, 10));
+console.log(`${metadata} = ${checksum}`);
 
 function rChild(_array) {
+    //console.log('rchild')
     // Store number of children
     const numChild = parseInt(_array[0], 10);
-
-
-
     const numMeta = parseInt(_array[1], 10);
 
-    //const childArray = _array.slice(2);
-    console.log(`_array: ${_array.join(' ')}`);
-    var childIndex = 2; // Working index for child nodes /// VAR?
+    if (numMeta <= 0) {
+        console.log('no meta' + numMeta);
+        //debugger;
+    }
+
+    //console.log(`_array: ${_array.join(' ')}`);
+    let childIndex = 2; // Working index for child nodes /// VAR?
     var childLength = 0;
-    var childMeta = []; /// VAR?
+    let childMeta = []; /// VAR?
 
     if (numChild > 0) {
+
         for (var i = numChild; i--;) {
             var workingArray = _array.slice(childIndex); /// VAR?
-            console.log('Working Array: ' + workingArray.join(' '))
+            //console.log('Working Array: ' + workingArray.join(' '))
             var work = rChild(workingArray); // Recursion
-            //childIndex += work.childLength;
             childIndex += work.childLength;
-            childMeta = childMeta.concat(work.childMeta);
+            childLength += work.childLength;
+            if (work.childMeta.length > 0) {
+                childMeta = childMeta.concat(work.childMeta);
+            }
         }
-        //const meta = childArray.slice(-1 * childLength); //meh
-        childLength -= numMeta;
-
-        childMeta = _array.slice(-1 * numMeta).concat(childMeta); //VAR???
+        childLength = childLength - numMeta - 2;
+        //childLength -= numMeta;
+        if (numMeta > 0) {
+            childMeta = _array.slice(-1 * numMeta).concat(childMeta);
+        }
     }
     else {
         // No children
-
         childLength = 2 + numMeta;
-
-        console.log(`No Children: ${_array.join(' ')}`);
-        childMeta = childMeta.concat(_array.slice(2, 2 + numMeta));
+        //console.log(`No Children: ${_array.join(' ')}`);
+        if (numMeta > 0) {
+            childMeta = childMeta.concat(_array.slice(2, 2 + numMeta));
+        }
     }
-
 
     // Return length and metadata
     return {
