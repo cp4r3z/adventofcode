@@ -6,64 +6,54 @@ const fs = require('fs');
 
 const input = 'input.txt';
 const file = fs.readFileSync(input, 'utf8');
-const inputArr = file.split(' ');
+const arrInput = file.split(' ').map(s => parseInt(s, 10));
 
-console.log(inputArr.join(","));
-const test = rChild(inputArr);
-const metadata = test.childMeta.join(' + ');
-const checksum = test.childMeta.reduce((acc, cur) => parseInt(acc, 10) + parseInt(cur, 10));
+//console.log(inputArr.join(","));
+
+const test = rChild(0);
+const metadata = test.meta.join(' + ');
+const checksum = test.meta.reduce((acc, cur) => acc + cur);
 console.log(`${metadata} = ${checksum}`);
 
-function rChild(_array) {
-    //console.log('rchild')
-    // Store number of children
-    const numChild = parseInt(_array[0], 10);
-    const numMeta = parseInt(_array[1], 10);
+// take in start index, return metadata and end index
+function rChild(_iStart) {
 
-    if (numMeta <= 0) {
-        console.log('no meta' + numMeta);
-        //debugger;
+    let workingIndex = _iStart;
+    // Store number of children
+    const numChild = arrInput[workingIndex];
+    const numMeta = arrInput[workingIndex + 1];
+    workingIndex += 2; // Start of metadata, child, or next node
+
+    let out = {
+        iEnd: workingIndex,
+        meta: []
     }
 
-    //console.log(`_array: ${_array.join(' ')}`);
-    let childIndex = 2; // Working index for child nodes /// VAR?
-    var childLength = 0;
-    let childMeta = []; /// VAR?
-
+    if (numMeta == 0 && numChild == 0) {
+        console.log('no meta' + numMeta);
+        return out;
+    }
     if (numChild > 0) {
-
-        for (var i = numChild; i--;) {
-            var workingArray = _array.slice(childIndex); /// VAR?
-            //console.log('Working Array: ' + workingArray.join(' '))
-            var work = rChild(workingArray); // Recursion
-            childIndex += work.childLength;
-            childLength += work.childLength;
-            if (work.childMeta.length > 0) {
-                childMeta = childMeta.concat(work.childMeta);
-            }
+        let i = 0;
+        for (; i < numChild; i++) {
+            const outChild = rChild(workingIndex);
+            workingIndex = outChild.iEnd;
+            out.meta = out.meta.concat(outChild.meta);
         }
-        childLength = childLength - numMeta - 2;
-        //childLength -= numMeta;
-        if (numMeta > 0) {
-            childMeta = _array.slice(-1 * numMeta).concat(childMeta);
-        }
+        out.iEnd = workingIndex;
+    }
+    if (numMeta > 0) {
+        out.iEnd += numMeta;
+        out.meta = out.meta.concat(arrInput.slice(0).slice(workingIndex, workingIndex + numMeta))
+        return out;
+    }
+    else if (numMeta == 0) {
+        return out;
     }
     else {
-        // No children
-        childLength = 2 + numMeta;
-        //console.log(`No Children: ${_array.join(' ')}`);
-        if (numMeta > 0) {
-            childMeta = childMeta.concat(_array.slice(2, 2 + numMeta));
-        }
-    }
-
-    // Return length and metadata
-    return {
-        childLength,
-        childMeta
+        console.log('Should not happen');
     }
 }
 
-// Answer: 1+1+2+10+11+12+2+99=138.
 // End Process (gracefully)
 process.exit(0);
