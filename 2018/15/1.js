@@ -28,7 +28,7 @@ forXY(i => {
 });
 
 const goblins = arrSquares.filter(s => s.sym == 'G');
-const testCoor = arrSquares.find(s => s.x == 6 && s.y == 6);
+const testCoor = arrSquares.find(s => s.x == 25 && s.y == 16);
 testCoor.goToNearest('G');
 
 
@@ -57,14 +57,16 @@ function squareFactory(_position) {
 
     function goToNearest(_sym) {
         console.log(_sym)
-        let arrDistances = Array(arrInput.length).fill(Array(arrInput.length).fill(-1));
+        //let arrDistances = Array(arrInput.length).fill(Array(arrInput.length).fill(-1));
         let arrRange = [];
+        let arrNearest = [];
         arrRange.push({
             x: Square.x,
             y: Square.y,
             range: 0
         })
         let range = 0;
+        // Generate arrRange
         while ((arrRange.filter(r => r.range === range)).length > 0) {
             arrRange
                 .filter(r => r.range === range)
@@ -73,28 +75,21 @@ function squareFactory(_position) {
                     let d = {};
                     // Up
                     d = { x: r.x + 0, y: r.y + 1 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) &&
-                        r.y > xy.min &&
-                        arrInput[d.y][d.x] === '.'
-                    ) pushArrRange();
+                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.y > xy.min) pushArr();
                     // Down
                     d = { x: r.x + 0, y: r.y - 1 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) &&
-                        r.y < xy.max &&
-                        arrInput[d.y][d.x] === '.'
-                    ) pushArrRange();
+                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.y < xy.max) pushArr();
                     // Left
                     d = { x: r.x - 1, y: r.y + 0 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) &&
-                        r.x > xy.min &&
-                        arrInput[d.y][d.x] === '.'
-                    ) pushArrRange();
+                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.x > xy.min) pushArr();
                     // Right
                     d = { x: r.x + 1, y: r.y + 0 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) &&
-                        r.x < xy.max &&
-                        arrInput[d.y][d.x] === '.'
-                    ) pushArrRange();
+                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.x < xy.max) pushArr();
+
+                    function pushArr() {
+                        if (arrInput[d.y][d.x] === '.') pushArrRange();
+                        else if (arrInput[d.y][d.x] === _sym) pushArrNearest();
+                    }
 
                     function pushArrRange() {
                         arrRange.push({
@@ -103,10 +98,17 @@ function squareFactory(_position) {
                             range: range + 1
                         });
                     }
+
+                    function pushArrNearest() {
+                        arrNearest.push({
+                            x: d.x,
+                            y: d.y,
+                            range: range + 1
+                        });
+                    }
                 });
+            if (arrNearest.length > 0) break;
             range++;
-            const test = arrRange.filter(r => r.range === range);
-            debugger;
         }
     }
 
