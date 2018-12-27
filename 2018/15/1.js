@@ -29,15 +29,22 @@ forXY(i => {
 
 const goblins = arrSquares.filter(s => s.sym == 'G');
 const testCoor = arrSquares.find(s => s.x == 25 && s.y == 16);
-testCoor.goToNearest('G');
+const nearest = testCoor.move();
+
+/*
+check nearest range.
+go to nearest or attack
+update arrSquares with new locations
+*/
 
 
 // _position expects sym, x, y
 function squareFactory(_position) {
     if (_position.sym === '#') return null;
     let Square = _position;
+    setRace();
     Square.moves = getMoves();
-    Square.goToNearest = goToNearest;
+    Square.move = move;
     return Square;
 
     // Ideas
@@ -55,9 +62,20 @@ function squareFactory(_position) {
         return moves;
     }
 
-    function goToNearest(_sym) {
-        console.log(_sym)
-        //let arrDistances = Array(arrInput.length).fill(Array(arrInput.length).fill(-1));
+    function move() {
+        const nearest = getNearest();
+        if(nearest.range >1){
+            //relocate
+            //pick direction
+            
+        }
+        if(nearest.range===1){
+            //attack
+        }
+        
+    }
+
+    function getNearest() {
         let arrRange = [];
         let arrNearest = [];
         arrRange.push({
@@ -75,44 +93,73 @@ function squareFactory(_position) {
                     let d = {};
                     // Up
                     d = { x: r.x + 0, y: r.y + 1 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.y > xy.min) pushArr();
+                    if (r.y > xy.min) pushArr();
                     // Down
                     d = { x: r.x + 0, y: r.y - 1 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.y < xy.max) pushArr();
+                    if (r.y < xy.max) pushArr();
                     // Left
                     d = { x: r.x - 1, y: r.y + 0 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.x > xy.min) pushArr();
+                    if (r.x > xy.min) pushArr();
                     // Right
                     d = { x: r.x + 1, y: r.y + 0 };
-                    if (!arrRange.find(r => r.x === d.x && r.y === d.y) && r.x < xy.max) pushArr();
+                    if (r.x < xy.max) pushArr();
 
                     function pushArr() {
                         if (arrInput[d.y][d.x] === '.') pushArrRange();
-                        else if (arrInput[d.y][d.x] === _sym) pushArrNearest();
+                        else if (arrInput[d.y][d.x] === Square.raceEnemy) pushArrNearest();
                     }
 
                     function pushArrRange() {
-                        arrRange.push({
-                            x: d.x,
-                            y: d.y,
-                            range: range + 1
-                        });
+                        if (!arrRange.find(r => r.x === d.x && r.y === d.y)) {
+                            arrRange.push({
+                                x: d.x,
+                                y: d.y,
+                                range: range + 1
+                            });
+                        }
                     }
 
                     function pushArrNearest() {
-                        arrNearest.push({
-                            x: d.x,
-                            y: d.y,
-                            range: range + 1
-                        });
+                        if (!arrNearest.find(r => r.x === d.x && r.y === d.y)) {
+                            arrNearest.push({
+                                x: d.x,
+                                y: d.y,
+                                range: range + 1,
+                                moveDir: getDir()
+                            });
+                        }
+                    }
+                    
+                    function getDir(){
+                        //unwind arrRange
+                        //let r.x;
+                        //let r.y;
+                       for (var ra = range; ra--; ) {
+                           //Things[i];
+                       }
                     }
                 });
             if (arrNearest.length > 0) break;
             range++;
         }
+
+        return arrNearest.reduce(reduceByReadOrder);
     }
 
-    function getDistances() {}
+    function reduceByReadOrder(a, b) {
+        return (b.y <= a.y && b.x < a.x) ? b : a;
+    }
+
+    function setRace() {
+        if (_position.sym === 'G') {
+            Square.race = 'G';
+            Square.raceEnemy = 'E';
+        }
+        if (_position.sym === 'E') {
+            Square.race = 'E';
+            Square.raceEnemy = 'G';
+        }
+    }
 }
 
 function forXY(cb) {
