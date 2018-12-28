@@ -8,59 +8,46 @@ const _ = require('underscore');
 const file = require('fs').readFileSync('input.txt', 'utf8');
 const arrInput = file.split('\n');
 
-// Process input into usable data object
+
+/**
+ * Process input into usable data object
+ */
+
+// Step 0 - Map Callback Function - Processes the array into an array of arrays of decimals
+const step0 = row => row.split(',').map(p => ~~p); // double unary operator ~~ instead of p => parseInt(p, 10)
+
+// Step 1 - Map Callback Function - Converts the arrays of decimals into "star" objects
+const step1 = (row, index) => { return { index, coor: row, links: [] } };
+
+// Helper function which sums the absolute value of the distance between corresponding coordinates
+const getManhattenDistance = (coorA, coorB) => coorA.reduce((distance, dimA, i) => distance += Math.abs(coorB[i] - dimA), 0);
+
+// Step 2 - Map Callback Function - Find links between "stars" based on Manhatten Distance
+const step2 = (rowA, _i, a) => {
+    for (let i = 0; i < a.length; i++) {
+        if (getManhattenDistance(rowA.coor, a[i].coor) <= 3) rowA.links.push(i);
+    }
+    return rowA;
+};
+
 const stars = arrInput
     .map(step0)
     .map(step1)
     .map(step2);
 
-// Generate constellations
-let constellations = makeConstellations(stars);
-
-// Write Solution 1
-console.log(`Solution: ${constellations.length}`);
-
 /**
- * Functions
+ * Generate constellations
+ * Final "IIFE" converts star object array to an array of constellations (indexes)
  */
 
-// Step 0 - Map Callback Function - Processes the array into an array of arrays of decimals
-function step0(row) {
-    return row.split(',').map(p => ~~p); // double unary operator ~~ instead of p => parseInt(p, 10)
-}
-
-// Step 1 - Map Callback Function - Converts the arrays of decimals into "star" objects
-function step1(row, i) {
-    return {
-        index: i,
-        coor: row, // Not necessary
-        links: []
-    };
-}
-
-// Step 2 - Map Callback Function - Find links between "stars" based on Manhatten Distance
-function step2(rowA, _i, a) {
-    for (let i = 0; i < a.length; i++) {
-        if (getManhattenDistance(rowA.coor, a[i].coor) <= 3) rowA.links.push(i);
-    }
-    return rowA;
-}
-
-// Helper function which sums the absolute value of the distance between corresponding coordinates
-function getManhattenDistance(coorA, coorB) {
-    let distance = 0;
-    coorA.forEach((a, i) => distance += Math.abs(coorB[i] - a));
-    return distance;
-}
-
-// Final function which converts star object array to an array of constellations (indexes)
-function makeConstellations(_stars) {
-
+let constellations = (function(_stars) {
     let constellations = [];
     let cIndex = 0;
 
-    while (getUnplaced()) {
+    // Helper function which finds an unplaced star
+    const getUnplaced = () => _.find(_stars, s => !s.placed);
 
+    while (getUnplaced()) {
         // "Seed" constellation with a star and mark as placed
         const seed = getUnplaced();
         constellations[cIndex] = _.union([seed.index], seed.links);
@@ -84,12 +71,7 @@ function makeConstellations(_stars) {
     }
 
     return constellations;
+})(stars);
 
-    // Helper function which finds an unplaced star
-    function getUnplaced() {
-        return _.find(_stars, s => !s.placed);
-    }
-}
-
-// End Process (gracefully)
-process.exit(0);
+// Write Solution 1
+console.log(`Solution: ${constellations.length}`);
