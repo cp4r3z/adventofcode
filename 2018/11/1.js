@@ -41,10 +41,10 @@ function getMost(squareSize) {
     let levels = [];
     for (var y = 0; y < size - (squareSize - 1); y++) {
         for (var x = 0; x < size - (squareSize - 1); x++) {
-            let power = 0;
+            let power =0;
             for (var ys = 0; ys < squareSize; ys++) {
                 for (var xs = 0; xs < squareSize; xs++) {
-                    power += grid[y + ys][x + xs];
+                    power+=grid[y+ys][x+xs];
                 }
             }
             levels.push({
@@ -53,49 +53,6 @@ function getMost(squareSize) {
             });
         }
     }
-    const mostPower = _.reduce(levels, (max, l) => l.power > max.power ? l : max);
-    mostPower.squareSize = squareSize;
-    return mostPower;
-}
-
-
-// Second attempt at improving performance using memoization of previous square grids. Interestingly made things a bit worse!
-
-let powerMemo = Array(size).fill(0);
-function getMostMemo(squareSize) {
-    let levels = [];
-    for (var y = 0; y < size - (squareSize - 1); y++) {
-        for (var x = 0; x < size - (squareSize - 1); x++) {
-            let power = 0;
-            if (squareSize < 50) {
-                for (var ys = 0; ys < squareSize; ys++) {
-                    for (var xs = 0; xs < squareSize; xs++) {
-                        power += grid[y + ys][x + xs];
-                    }
-                }
-            }
-            else {
-                power = _.find(powerMemo[squareSize - 1], { topLeft: `${x+1},${y+1}` }).power;
-                // add extra column
-                for (var ys = 0; ys < squareSize; ys++) {
-                    power += grid[y + ys][x + squareSize-1];
-                }
-
-                // add extra row
-                for (var xs = 0; xs < squareSize-1; xs++) {
-                    power += grid[y + squareSize-1][x + xs];
-                }
-
-                //console.log('test');
-            }
-
-            levels.push({
-                topLeft: `${x+1},${y+1}`,
-                power
-            });
-        }
-    }
-    powerMemo[squareSize] = levels;
     const mostPower = _.reduce(levels, (max, l) => l.power > max.power ? l : max);
     mostPower.squareSize = squareSize;
     return mostPower;
@@ -113,15 +70,12 @@ let most2;
 for (var i = 1; i <= size; i++) {
     console.log(i);
     const iMost = getMost(i);
-    if (!most2 || iMost.power > most2.power) most2 = iMost;
+    if (!most2 || iMost.power>most2.power) most2 = iMost;
 }
-
 
 console.log(most2.topLeft);
 console.log(most2.power);
 console.log(most2.squareSize);
-
-// 236,175,11
 
 // End Process (gracefully)
 process.exit(0);
