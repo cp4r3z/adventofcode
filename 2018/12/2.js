@@ -28,20 +28,14 @@ let padding = { first: 0, last: 0 };
 
 // This requires knowledge of the end padding state for an existing run
 //let knownPadding = { "first": 2, "last": 3 };
-// let knownPadding = { "first": 3, "last": 5 }
-let knownPadding = { "first": 3, "last": 33 };
+let knownPadding = { "first": 3, "last": 5 }
 padState(knownPadding);
 
-//const generations = 20;
-
+const generations = 20;
 
 padState();
-//printState();
-let genLoop = 0;
-let stateRecord = [dePad()];
-let foundDuplicate = false;
-while (!foundDuplicate) {
-    genLoop++;
+printState();
+for (var g = 0; g < generations; g++) {
     padState();
     const minMax = getMinMax();
     const nextGenState = _.mapObject(state, s => s = '.');
@@ -55,51 +49,22 @@ while (!foundDuplicate) {
         const test = 0;
     }
     state = nextGenState;
-    const stateDepadded = dePad();
-    if (stateRecord.indexOf(stateDepadded) > -1) {
-        const loopStart = stateRecord.indexOf(stateDepadded);
-        //genLoop = stateRecord.length-1-loopStart;
-        if (genLoop % 160 == 0) {
-            foundDuplicate = true;
-            console.log(`Generations Loop every ${genLoop} generations.`);
-            // each loop adds 5280
-            printTotal();
-        }
-    }
+    printState();
+}
+
+//console.log("Padding: " + JSON.stringify(padding));
+
+// Now add up the pot numbers of all plant containing pots
+const total = _.reduce(state, (memo, potState, potNumber) => {
+    if (potState == '#') { return memo += parseInt(potNumber, 10); }
     else {
-        stateRecord.push(stateDepadded);
+        return memo;
     }
-    //printState();
-    
-//     Solution 2: Pot Sum: 5335
-// Generations Loop every 161 generations.
-// Solution 2: Pot Sum: 5368
-// Generations Loop every 162 generations.
-// Solution 2: Pot Sum: 5401
-}
+}, 0);
 
-console.log("Padding: " + JSON.stringify(padding));
+console.log(`Solution 1: Pot Sum: ${total}`);
 
-//OK, so... 
-const generations = 50000000000;
-const loops = generations / 160;
-const solution = loops*5280+55;
 
-//1650000000055 was the answer
-
-// 5335 is too low
-
-function printTotal() {
-    // Now add up the pot numbers of all plant containing pots
-    const total = _.reduce(state, (memo, potState, potNumber) => {
-        if (potState == '#') { return memo += parseInt(potNumber, 10); }
-        else {
-            return memo;
-        }
-    }, 0);
-
-    console.log(`Solution 2: Pot Sum: ${total}`);
-}
 
 function getMinMax() {
     return {
@@ -145,19 +110,6 @@ function padState(_padding) {
             state[(_minMax.max + i).toString()] = '.';
         }
     }
-}
-
-function dePad() {
-    const minMax = getMinMax();
-    let s = [];
-    for (var i = minMax.min; i <= minMax.max; i++) {
-        s.push(state[i.toString()]);
-    }
-    const firstPot = _.indexOf(s, '#');
-    const lastPot = _.lastIndexOf(s, '#');
-    let sDepadded = _.first(s, lastPot + 1);
-    sDepadded = _.last(sDepadded, sDepadded.length - firstPot);
-    return sDepadded.join('');
 }
 
 function getFive(startIndex) {
