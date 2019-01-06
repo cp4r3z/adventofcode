@@ -2,7 +2,7 @@
  * https://adventofcode.com/2018/day13
  */
 
-const _ = require('underscore'); // Not used
+const _ = require('underscore');
 
 // Read input into simple array
 const trackWithCarts = require('fs').readFileSync('input.txt', 'utf8').split('\n').map(row => row.split(''));
