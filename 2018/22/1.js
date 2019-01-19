@@ -2,7 +2,7 @@
  * https://adventofcode.com/2018/day22
  */
 
-const _ = require('underscore'); // Not used?
+const _ = require('underscore');
 
 const depth = 11109;
 const target = { x: 9, y: 731 };
