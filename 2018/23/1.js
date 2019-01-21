@@ -2,7 +2,7 @@
  * https://adventofcode.com/2018/day23
  */
 
-const _ = require('underscore'); // Not used?
+const _ = require('underscore');
 
 // Read input into simple array
 const arrInput = require('fs').readFileSync('input.txt', 'utf8').split('\n');
@@ -29,13 +29,7 @@ const inRange = points.reduce((total, p) => {
 
 console.log(`Solution 1: Risk = ${inRange}`);
 
-// Helper function which sums the absolute value of the distance between corresponding coordinates
-function getManhattenDistance(coorA, coorB) {
-    return coorA.reduce((distance, dimA, i) => distance += Math.abs(coorB[i] - dimA), 0);
-}
-
-// Find min/max of all?
-
+// Find min/max of all
 let min = {};
 let max = {};
 
@@ -65,15 +59,155 @@ for (var ix = min.x; ix <= max.x; ix++) {
 }
 */
 
+// The main "working" array of "octs" or octants, which are subdivisions of the space
 let octs = createOcts(min, max);
-let maxOcts = [];
+
+let octsRemain = octs.length > 0;
+
+while (octsRemain) {
+
+    // for each, determine if it's a single point
+    let rangePoints = octs.filter(isOctAPoint);
+    let rangeOcts = octs.filter(isOctNotAPoint);
+
+    // Add any points found
+    const pointsFound = rangePoints.map(convertOctToPoint);
+    allPoints = allPoints.concat(pointsFound);
+
+    // evaluate currect octs
+
+    if (rangeOcts.length > 0) {
+        const bestReception = rangeOcts.reduce((best, oo) => {
+            const pointsInOO = pointsInOct(oo);
+            return pointsInOO > best ? pointsInOO : best;
+        }, 0);
+        rangeOcts = rangeOcts.filter(oo => pointsInOct(oo) == bestReception);
+        rangeOcts.forEach(o => {
+            const subOcts = createOcts(o.min, o.max);
+            octs = [];
+            subOcts.forEach(so => octs.push(so));
+        });
+    }
+    else {
+        octsRemain = false;
+    }
+}
+
+allPoints.sort((p1, p2) => p2.reception - p1.reception);
+const mostRange = allPoints[0].reception;
+const pointsMostRange = allPoints.filter(p => p.reception == mostRange).map(p => getManhattenDistance([0, 0, 0], p.coor)).sort((d1, d2) => d2 - d1);
+
+console.log(`Solution 2: Shortest Manhatten Distance = ${pointsMostRange[0]}`);
+//Answer: 121493971
+
+// Input array of Points And/Or Octs
+// Not used attempt at recursion; Got too out of control.
+function findBestReception(arrPsOrOs) {
+    // for each, determine if it's a single point
+    const Ps = arrPsOrOs.filter(isPoint);
+    const Os = arrPsOrOs.filter(isOct);
+
+    // i think this is where you filter out the octs that are points.
+    let OsOcts = Os.filter(isOctNotAPoint);
+
+    // somewhere in here we've gotta oct the octs
+    let more = [];
+    if (OsOcts.length > 0) {
+        //todo: probably best to map the reception in...
+        const bestReception = OsOcts.reduce((best, oo) => {
+            const pointsInOO = pointsInOct(oo);
+            return pointsInOO > best ? pointsInOO : best;
+        }, 0);
+        OsOcts = OsOcts.filter(oo => pointsInOct(oo) == bestReception);
+        OsOcts.forEach(o => {
+            const subOcts = createOcts(o.min, o.max);
+            subOcts.forEach(so => more.push(so));
+        });
+    }
+    // now reduce to the highest octs!
+
+    let morePs = [];
+    more.forEach(oct => {
+        const ps = findBestReception(createOcts(oct.min, oct.max));
+        morePs.push(ps);
+    });
+
+    const octPoints = Os.filter(isOctAPoint).map(convertOctToPoint);
+    Ps = Ps.concat(octPoints).concat(morePs);
+
+    // now only return the highest ps;
+    return Ps;
+
+
+
+    // then return a list of the best points and octs
+}
+
+function getCoorReception(coor) {
+    let reception = 0;
+    points.forEach(p => {
+        if (getManhattenDistance(coor, p.coor) <= p.r) reception++;
+    });
+    return reception;
+}
+
+function pointsInOct(oct) {
+    let pointsInRange = 0;
+    points.forEach(p => {
+        const withinX = p.coor[0] >= oct.min.x && p.coor[0] <= oct.max.x;
+        const withinY = p.coor[1] >= oct.min.y && p.coor[1] <= oct.max.y;
+        const withinZ = p.coor[2] >= oct.min.z && p.coor[2] <= oct.max.z;
+        if (withinX && withinY && withinZ) {
+            // The point is within the Oct
+            pointsInRange++;
+            return;
+        }
+        else {
+            // Find the closest coor on the Oct (octCoor) to the point
+            let octCoor = Array(3).fill(0);
+            octCoor[0] = (p.coor[0] > oct.max.x) ? oct.max.x : oct.min.x;
+            octCoor[1] = (p.coor[1] > oct.max.y) ? oct.max.y : oct.min.y;
+            octCoor[2] = (p.coor[2] > oct.max.z) ? oct.max.z : oct.min.z;
+            if (getManhattenDistance(octCoor, p.coor) <= p.r) pointsInRange++;
+        }
+    });
+    return pointsInRange;
+}
+
+function isOct(_pOrOct) {
+    return 'min' in _pOrOct;
+}
+
+function isPoint(_pOrOct) {
+    return !('min' in _pOrOct);
+}
+
+function convertOctToPoint(oct) {
+    const coor = [oct.min.x, oct.min.y, oct.min.z];
+    const reception = getCoorReception(coor);
+    return {
+        coor,
+        reception
+    };
+}
+
+//todo. fix this
+function isOctAPoint(_min, _max) {
+    return _min.x == _max.x && _min.y == _max.y && _min.z == _max.z;
+}
+
+function isOctNotAPoint(_oct) {
+    return _oct.max.x > _oct.min.x || _oct.max.z > _oct.min.z || _oct.max.z > _oct.min.z;
+}
 
 // Assume min and max both have x, y and z params
+// There's got to be a better way to do this. I went about it the long way.
 function createOcts(_min, _max) {
     let _mid = {};
-    _mid.x = Math.round((_max.x + _min.x) / 2);
-    _mid.y = Math.round((_max.y + _min.y) / 2);
-    _mid.z = Math.round((_max.z + _min.z) / 2);
+
+    _mid.x = (_max.x - _min.x == 1) ? _min.x : Math.floor((_max.x + _min.x) / 2);
+    _mid.y = (_max.y - _min.y == 1) ? _min.y : Math.floor((_max.y + _min.y) / 2);
+    _mid.z = (_max.z - _min.z == 1) ? _min.z : Math.floor((_max.z + _min.z) / 2);
 
     let octs = Array(8).fill(0).map(o => {
         return {
@@ -81,7 +215,6 @@ function createOcts(_min, _max) {
             max: { x: 0, y: 0, z: 0 }
         };
     });
-    //let out = Array(size.ymax - size.ymin + 1).fill(0).map(x => (Array(size.xmax - size.xmin + 1).fill(".")));
 
     octs[0].min.x = _min.x;
     octs[0].min.y = _min.y;
@@ -140,6 +273,11 @@ function createOcts(_min, _max) {
     octs[7].max.z = _max.z; //
 
     return octs;
+}
+
+// Helper function which sums the absolute value of the distance between corresponding coordinates
+function getManhattenDistance(coorA, coorB) {
+    return coorA.reduce((distance, dimA, i) => distance += Math.abs(coorB[i] - dimA), 0);
 }
 
 // End Process (gracefully)
