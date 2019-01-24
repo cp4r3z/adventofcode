@@ -5,7 +5,7 @@
 const _ = require('underscore');
 
 // Read input into simple array
-const arrInput = require('fs').readFileSync('input1.test.txt', 'utf8').split('\n\n');
+const arrInput = require('fs').readFileSync('input1.txt', 'utf8').split('\n\n');
 
 // Step 0 - Map Function - Use Regular Expression to parse each row
 
@@ -62,18 +62,80 @@ let opIndices = Array(16).fill(0).map(r => []);
 
 // for each sample, test against all possible opcodes, and evaluate if the after state is valid
 const validCodes = samples.map(s => {
+    let count = 0;
     opcodes.forEach(o => {
         const before = s.before.slice(0);
         const after = s.after.slice(0);
-        let instruction = s.instruction;
+        let instruction = _.clone(s.instruction);
+        const opIndex = ~~instruction.opcode;
         instruction.opcode = o;
         const testAfter = op(instruction, before);
         if (_.isEqual(testAfter, after)) {
             //console.log('hi');
-            opIndices[instruction.opcode].push(o);
+            opIndices[opIndex].push(o);
+            count++;
         }
     });
+    return count;
 });
+
+const moreThanThree = validCodes.reduce((count, code) => code >= 3 ? count + 1 : count, 0);
+
+console.log(`Solution 1: Samples w/ >=3 opcodes: ${moreThanThree}`);
+
+opIndices = opIndices.map(i => _.uniq(i));
+
+let unsolved = true;
+// there's gotta be a better way to do this
+while (unsolved) {
+    // find an array with only one entry
+    const single = _.find(opIndices, oi => oi.length == 1 && !oi.solved);
+    if (single) {
+        //op[single[0]]=
+        let singleIndex = false;
+        opIndices = opIndices.map((oi, i) => {
+            if (oi.length == 1 && !oi.solved) singleIndex = i;
+            if (oi.length > 1) {
+                const what = _.without(oi, single[0]);
+                return _.without(oi, single[0]);
+            }
+            else return oi;
+        });
+        opIndices[singleIndex].solved = true;
+
+        let oUniq = {};
+        opIndices.forEach(oi => {
+            if (!oi.solved) {
+                oi.forEach(o => {
+                    if (!oUniq[o]) {
+                        oUniq[o] = 1;
+                    }
+                    else oUniq[o]++;
+                });
+            }
+        });
+        //const uniq = _.findKey(oUniq, (o,i) => i == 1);
+        const uniq = _.findKey(oUniq, o => o == 1);
+        
+        let singleIndex2 = false;
+        if (uniq) {
+            opIndices = opIndices.map((oi,i) => {
+                if (oi.indexOf(uniq) > -1) {
+                    singleIndex2 =i;
+                    return [uniq]
+                }
+                else return oi;
+            });
+            opIndices[singleIndex2].solved = true;
+        }
+        
+    }
+    else {
+        unsolved = false;
+    }
+}
+
+opIndices = opIndices.map(oi=>oi[0]);
 
 // instruction (or _in) take an object, containing:
 // opcode, a, b, c
