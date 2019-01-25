@@ -7,10 +7,17 @@ const _ = require('underscore');
 // Read input into simple array
 const arrInput = require('fs').readFileSync('input1.txt', 'utf8').split('\n\n');
 
+// Read input into simple array
+const arrInput2 = require('fs').readFileSync('input2.txt', 'utf8').split('\n');
+
 // Step 0 - Map Function - Use Regular Expression to parse each row
 
 const re = /Before: \[(\d+), (\d+), (\d+), (\d+)\]\n(\d+) (\d+) (\d+) (\d+)\nAfter:  \[(\d+), (\d+), (\d+), (\d+)\]/m;
 const step0 = row => re.exec(row);
+
+const re2 = /(\d+) (\d+) (\d+) (\d+)/;
+const step02 = row => re2.exec(row);
+
 const step1 = row => {
     return {
         before: [~~row[1], ~~row[2], ~~row[3], ~~row[4]],
@@ -24,11 +31,22 @@ const step1 = row => {
     }
 };
 
+const step12 = row => {
+    return {
+        opcode: ~~row[1],
+        a: ~~row[2],
+        b: ~~row[3],
+        c: ~~row[4]
+    };
+};
+
 const samples = arrInput
     .map(step0)
     .map(step1);
 
-let registers = [0, 0, 0, 0];
+let program = arrInput2
+    .map(step02)
+    .map(step12);
 
 // const testIn = {
 //     opcode: 'addi',
@@ -116,26 +134,40 @@ while (unsolved) {
         });
         //const uniq = _.findKey(oUniq, (o,i) => i == 1);
         const uniq = _.findKey(oUniq, o => o == 1);
-        
+
         let singleIndex2 = false;
         if (uniq) {
-            opIndices = opIndices.map((oi,i) => {
+            opIndices = opIndices.map((oi, i) => {
                 if (oi.indexOf(uniq) > -1) {
-                    singleIndex2 =i;
+                    singleIndex2 = i;
                     return [uniq]
                 }
                 else return oi;
             });
             opIndices[singleIndex2].solved = true;
         }
-        
+
     }
     else {
         unsolved = false;
     }
 }
 
-opIndices = opIndices.map(oi=>oi[0]);
+opIndices = opIndices.map(oi => oi[0]);
+
+program = program.map(i => {
+    let i2 = _.clone(i);
+    i2.opcode = opIndices[i2.opcode];
+    return i2;
+});
+
+let registers = [0, 0, 0, 0];
+
+program.forEach(i => {
+    registers = op(i, registers);
+});
+
+console.log(`Solution 2: Register A is ${registers[0]}`);
 
 // instruction (or _in) take an object, containing:
 // opcode, a, b, c
