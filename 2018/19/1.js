@@ -29,6 +29,7 @@ const program = arrInput
 //let registers = [1, 0, 0, 0, 0, 0];
 
 //factors  = 1, 3, 71, 213, 49537, 148611, 3517127, 10551381,
+// add em all toghether : 14266944
 
 //let registers = [4, 1, 3517127, 8, 3, 10551381];
 //let registers = [4, 1, 10551382, 10, 70,10551381 ];
