@@ -33,7 +33,7 @@ const maxOps = 1e10; // Set some limit on the number of operations.
 run_program(maxOps, 0);
 
 console.log(`Part 1 Solution: ${arrInstruction28[0]}`);
-console.log(`Part 1 Solution: ${arrInstruction28[arrInstruction28.length-1]}`);
+console.log(`Part 2 Solution: ${arrInstruction28[arrInstruction28.length-1]}`);
 
 // 202209 (first answer)
 // 11777564 (second answer)
