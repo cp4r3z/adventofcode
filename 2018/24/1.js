@@ -61,78 +61,100 @@ const infect = arrInputInfect
 
 let groups = _.union(immune, infect);
 
-// console.log(immune[0].ep());
-// immune[0].units--;
-// console.log(immune[0].ep());
+targetPhase();
+attackPhase();
 
-// sort by ep
-//groups.sort((g1, g2) => g2.ep() - g1.ep());
 
-// check ep
-//groups.forEach(g => console.log(g.ep()))
 
-// TARGET PHASE
+function targetPhase() {
+    // TARGET PHASE
 
-// Sort by effective power and then initiative
-groups.sort((g1, g2) => {
-    if (g1.ep() !== g2.ep()) {
-        return g2.ep() - g1.ep();
-    }
-    else {
-        return g2.init - g1.init;
-    }
-});
-console.log('Sort By EP+Init');
-groups.forEach((g, i) => console.log(`${g.group} ${g.groupi} - ep:${g.ep()}`));
-
-// reset taken
-groups.forEach(g => g.targetted = false);
-
-groups.forEach((g, i, a) => {
-    //aquire target
-    //calc damage against each target
-    let targets = [];
-    if (g.group == 'immune') targets = a.filter(g => !g.targetted && g.group == 'infect');
-    if (g.group == 'infect') targets = a.filter(g => !g.targetted && g.group == 'immune');
-    console.log(`Finding target for ${g.groupid}`)
-    //console.log(targets.length);
-    targets.forEach(t => {
-        t.dmgFromG = 10;
-        if (t.immu.indexOf(g.dmgType) > -1) {
-            t.dmgFromG = 0;
-        }
-        else if (t.weak.indexOf(g.dmgType) > -1) {
-            t.dmgFromG = 2 * g.ep();
+    // Sort by effective power and then initiative
+    groups.sort((g1, g2) => {
+        if (g1.ep() !== g2.ep()) {
+            return g2.ep() - g1.ep();
         }
         else {
-            t.dmgFromG = g.ep();
+            return g2.init - g1.init;
         }
     });
-    targets.sort((t1, t2) => t2.dmgFromG - t1.dmgFromG);
-    //sort by damage
-    //assign g.target
-    // Find most damage. If tied, target most ep
-    targets = targets.filter((t, i, a) => t.dmgFromG == a[0].dmgFromG);
-    if (targets.length > 1) {
-        //console.log('oo, larger than 1')
-        targets.sort((t1, t2) => t2.ep() - t1.ep());
-        targets = targets.filter((t, i, a) => t.ep() == a[0].ep());
+    console.log('Sort By EP+Init');
+    groups.forEach((g, i) => console.log(`${g.group} ${g.groupi} - ep:${g.ep()}`));
+
+    // reset taken
+    groups.forEach(g => g.target = false);
+    groups.forEach(g => g.targetted = false);
+    groups.forEach(g => g.dmgFromG = false);
+
+    groups.forEach((g, i, a) => {
+        //aquire target
+        //calc damage against each target
+        let targets = [];
+        if (g.group == 'immune') targets = a.filter(g => !g.targetted && g.group == 'infect');
+        if (g.group == 'infect') targets = a.filter(g => !g.targetted && g.group == 'immune');
+        console.log(`Finding target for ${g.groupid}`)
+        //console.log(targets.length);
+        targets.forEach(t => {
+            t.dmgFromG = calcDamage(g.ep(), t.weak.indexOf(g.dmgType) > -1, t.immu.indexOf(g.dmgType) > -1);
+        });
+        targets.sort((t1, t2) => t2.dmgFromG - t1.dmgFromG);
+        //sort by damage
+        //assign g.target
+        // Find most damage. If tied, target most ep
+        targets = targets.filter((t, i, a) => t.dmgFromG == a[0].dmgFromG);
         if (targets.length > 1) {
-            //console.log('ooooo, larger than 1')
-            targets.sort((t1, t2) => t2.init - t1.init);
-            //targets = targets.filter((t, i, a) => t.init == a[0].init;
+            //console.log('oo, larger than 1')
+            targets.sort((t1, t2) => t2.ep() - t1.ep());
+            targets = targets.filter((t, i, a) => t.ep() == a[0].ep());
+            if (targets.length > 1) {
+                //console.log('ooooo, larger than 1')
+                targets.sort((t1, t2) => t2.init - t1.init);
+                //targets = targets.filter((t, i, a) => t.init == a[0].init;
+            }
         }
+
+        const targetGroupId = targets[0].groupid;
+        g.target = targetGroupId;
+        // g.dmgToTarget = targets
+        const targetGroupIdIndex = _.findIndex(a, g => g.groupid == targetGroupId);
+        a[targetGroupIdIndex].targetted = true;
+        //console.log(`${g.groupid} targets ${g.target}`);
+    })
+
+
+    groups.forEach((g, i) => console.log(`${g.groupid} targets ${g.target}`));
+}
+
+function attackPhase() {
+    groups.sort((g1, g2) => g2.init - g1.init);
+    groups.forEach((g, i, a) => {
+        if (g.units > 0 && g.target) {
+            const targetGroupIdIndex = _.findIndex(a, ag => ag.groupid == g.target);
+            const targetID = a[targetGroupIdIndex].groupid;
+            const targetHP = a[targetGroupIdIndex].hp;
+            const targetDM = calcDamage(g.ep(), a[targetGroupIdIndex].weak.indexOf(g.dmgType) > -1, a[targetGroupIdIndex].immu.indexOf(g.dmgType) > -1);
+
+            const targetUS = a[targetGroupIdIndex].units;
+            const unitsDestroyed = Math.min(Math.floor(targetDM / targetHP), targetUS);
+            console.log(`${g.groupid} attacks ${targetID} with ${targetDM} destroying ${unitsDestroyed} units.`);
+            a[targetGroupIdIndex].units = a[targetGroupIdIndex].units - unitsDestroyed;
+        }
+    })
+}
+
+function calcDamage(_ep, _isWeak, _isImmune) {
+    let dmg = -1;
+    if (_isImmune) {
+        dmg = 0;
     }
-
-    const targetGroupId = targets[0].groupid;
-    g.target = targetGroupId;
-    const targetGroupIdIndex = _.findIndex(a, g => g.groupid == targetGroupId);
-    a[targetGroupIdIndex].targetted = true;
-    //console.log(`${g.groupid} targets ${g.target}`);
-})
-
-
-groups.forEach((g, i) => console.log(`${g.groupid} targets ${g.target}`));
+    else if (_isWeak) {
+        dmg = 2 * _ep;
+    }
+    else {
+        dmg = _ep;
+    }
+    return dmg;
+}
 
 // Converts a comma-separated string to an array
 // Note: This is too complicated. string.split would be better. I just was having fun.
