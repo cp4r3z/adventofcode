@@ -5,14 +5,20 @@
 const _ = require('underscore');
 
 // Read input into simple array
-const arrInputImmune = require('fs').readFileSync('input_immune_test.txt', 'utf8').split('\n');
-const arrInputInfect = require('fs').readFileSync('input_infection_test.txt', 'utf8').split('\n');
+// const arrInputImmune = require('fs').readFileSync('input_immune_test.txt', 'utf8').split('\n');
+// const arrInputInfect = require('fs').readFileSync('input_infection_test.txt', 'utf8').split('\n');
+
+const arrInputImmune = require('fs').readFileSync('input_immune.txt', 'utf8').split('\n');
+const arrInputInfect = require('fs').readFileSync('input_infection.txt', 'utf8').split('\n');
 
 let reMain = /(\d+) units each with (\d+) hit points (\([\w\s,;]+\))?[ ]?with an attack that does (\d+) (\w+) damage at initiative (\d+)/;
 let reWeak = /weak to ([\w\s,]+)/;
 let reImmu = /immune to ([\w\s,]+)/;
 
 const mapMain = row => reMain.exec(row);
+
+let boost = 39;
+// 39 works for Part 2. Good ol manual binary search.
 
 const mapType = (row, rowi) => {
     let weak = [];
@@ -39,6 +45,7 @@ const mapGroupImmune = row => {
     const group = 'immune';
     row.group = group;
     row.groupid = group + row.groupi.toString();
+    row.dmg += boost; // Part 2
     return row;
 };
 
@@ -61,10 +68,21 @@ const infect = arrInputInfect
 
 let groups = _.union(immune, infect);
 
-targetPhase();
-attackPhase();
+while (!warIsOver()) {
+    targetPhase();
+    attackPhase();
+}
+console.log(`Solution 1: Units Remaining: ${warIsOver()}`);
 
+// Part 2
 
+// for (var i = 1000; i--;) {
+//     boost = i;
+//     while (!warIsOver()) {
+//         targetPhase();
+//         attackPhase();
+//     }
+// }
 
 function targetPhase() {
     // TARGET PHASE
@@ -78,51 +96,39 @@ function targetPhase() {
             return g2.init - g1.init;
         }
     });
-    console.log('Sort By EP+Init');
-    groups.forEach((g, i) => console.log(`${g.group} ${g.groupi} - ep:${g.ep()}`));
 
-    // reset taken
+    // reset
     groups.forEach(g => g.target = false);
     groups.forEach(g => g.targetted = false);
     groups.forEach(g => g.dmgFromG = false);
 
     groups.forEach((g, i, a) => {
-        //aquire target
-        //calc damage against each target
         let targets = [];
-        if (g.group == 'immune') targets = a.filter(g => !g.targetted && g.group == 'infect');
-        if (g.group == 'infect') targets = a.filter(g => !g.targetted && g.group == 'immune');
-        console.log(`Finding target for ${g.groupid}`)
-        //console.log(targets.length);
+        if (g.group == 'immune') targets = a.filter(g => !g.targetted && g.group == 'infect' && g.units > 0);
+        if (g.group == 'infect') targets = a.filter(g => !g.targetted && g.group == 'immune' && g.units > 0);
+
         targets.forEach(t => {
             t.dmgFromG = calcDamage(g.ep(), t.weak.indexOf(g.dmgType) > -1, t.immu.indexOf(g.dmgType) > -1);
         });
         targets.sort((t1, t2) => t2.dmgFromG - t1.dmgFromG);
-        //sort by damage
-        //assign g.target
+
         // Find most damage. If tied, target most ep
         targets = targets.filter((t, i, a) => t.dmgFromG == a[0].dmgFromG);
         if (targets.length > 1) {
-            //console.log('oo, larger than 1')
             targets.sort((t1, t2) => t2.ep() - t1.ep());
             targets = targets.filter((t, i, a) => t.ep() == a[0].ep());
             if (targets.length > 1) {
-                //console.log('ooooo, larger than 1')
                 targets.sort((t1, t2) => t2.init - t1.init);
-                //targets = targets.filter((t, i, a) => t.init == a[0].init;
             }
         }
-
-        const targetGroupId = targets[0].groupid;
-        g.target = targetGroupId;
-        // g.dmgToTarget = targets
-        const targetGroupIdIndex = _.findIndex(a, g => g.groupid == targetGroupId);
-        a[targetGroupIdIndex].targetted = true;
-        //console.log(`${g.groupid} targets ${g.target}`);
+        if (targets.length > 0 && targets[0].dmgFromG > 0) {
+            const targetGroupId = targets[0].groupid;
+            g.target = targetGroupId;
+            const targetGroupIdIndex = _.findIndex(a, g => g.groupid == targetGroupId);
+            a[targetGroupIdIndex].targetted = true;
+            //console.log(`${g.groupid} targets ${g.target}`);
+        }
     })
-
-
-    groups.forEach((g, i) => console.log(`${g.groupid} targets ${g.target}`));
 }
 
 function attackPhase() {
@@ -140,6 +146,20 @@ function attackPhase() {
             a[targetGroupIdIndex].units = a[targetGroupIdIndex].units - unitsDestroyed;
         }
     })
+}
+
+function warIsOver() {
+    const infect = groups.filter(g => g.units > 0 && g.group == 'infect');
+    const immune = groups.filter(g => g.units > 0 && g.group == 'immune');
+    if (immune.length > 0 && infect.length > 0) return false;
+    if (immune.length == 0) {
+        console.log('Infection WINS')
+    }
+    else {
+        console.log('Immune WINS');
+    }
+    const unitsRemaining = groups.reduce((u, g) => u + g.units, 0);
+    return unitsRemaining;
 }
 
 function calcDamage(_ep, _isWeak, _isImmune) {
