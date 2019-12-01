@@ -4,7 +4,7 @@
 
 const _ = require('underscore');
 
-let map = require('fs').readFileSync('input_test2.txt', 'utf8');
+let map = require('fs').readFileSync('./2018/20/input_test2.txt', 'utf8');
 map = map.substring(1, map.length - 1);
 
 const test = parens(map);
@@ -22,6 +22,8 @@ function recurseParens(_s) {
     let doors = 0;
     const p = parens(_s);
     doors += p.nGroupLength;
+    p.groups.forEach(g=>console.log(g.str));
+    console.log('nGroups: '+p.nGroups.join(','));
     
     if (p.groups.length > 0) {
         // add all non-paren string length
@@ -96,6 +98,7 @@ function parens(_s) {
     //nGroups.forEach(ng => nGroupLength += longestBranch(ng));
     return {
         groups,
+        nGroups,
         nGroupLength
     }
 }
