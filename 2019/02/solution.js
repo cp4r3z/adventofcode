@@ -10,34 +10,52 @@ const arrInput = input
     .split(',')                 // Split by delimiter
     .map(s => parseInt(s, 10)); // Convert to integers. See also parseFloat() and Number()
 
-let intCodes = [...arrInput];
 
 // "1202 program alarm" state
-intCodes[1] = 12;
-intCodes[2] = 2;
+const part1 = runProgram(12, 2, 1e12);
+console.log(`Part 1: position 0 = ${part1}`);
 
-let pos = 0;
-let posOpCode = intCodes[pos];
-
-while (posOpCode !== 99 && pos <= intCodes.length) {
-    const intList = intCodes.slice(pos, pos + 4);
-    switch (intList[0]) {
-        case 1:
-            // Addition
-            intCodes[intList[3]] = intCodes[intList[1]] + intCodes[intList[2]];
+let part2Target = 19690720;
+let keepGoing = true;
+for (let noun = 0; noun < 100; noun++) {
+    for (let verb = 0; verb < 100; verb++) {
+        const output = runProgram(noun, verb, part2Target);
+        if (output === part2Target) {
+            console.log(`Part 2: Input = ${noun * 100 + verb}`);
+            keepGoing = false;
             break;
-        case 2:
-            //Multiplication
-            intCodes[intList[3]] = intCodes[intList[1]] * intCodes[intList[2]];
-            break;
-        default:
-            console.error("Unknown Command");
+        }
     }
-    pos = pos + 4;
-    posOpCode = intCodes[pos];
+    if (!keepGoing) break;
 }
 
-console.log(`Part 1: position 0 = ${intCodes[0]}`);
+function runProgram(noun, verb, max) {
+    let intCodes = [...arrInput];
+    intCodes[1] = noun; // noun
+    intCodes[2] = verb;  // verb
+
+    let pos = 0;
+    let posOpCode = intCodes[pos];
+
+    while (posOpCode !== 99 && pos <= intCodes.length && intCodes[0] < max) {
+        const intList = intCodes.slice(pos, pos + 4);
+        switch (intList[0]) {
+            case 1:
+                // Addition
+                intCodes[intList[3]] = intCodes[intList[1]] + intCodes[intList[2]];
+                break;
+            case 2:
+                //Multiplication
+                intCodes[intList[3]] = intCodes[intList[1]] * intCodes[intList[2]];
+                break;
+            default:
+                console.error("Unknown Command");
+        }
+        pos = pos + 4;
+        posOpCode = intCodes[pos];
+    }
+    return intCodes[0];
+}
 
 // End Process (gracefully)
 process.exit(0);
