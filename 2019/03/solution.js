@@ -3,7 +3,7 @@
  */
 
 // Read input into an array (arrInput)
-const input = require('fs').readFileSync('input.txt', 'utf8');
+const input = require('fs').readFileSync(__dirname + '/' + 'input.txt', 'utf8');
 const arrInputPaths = input
     .trim()                     // Remove whitespace
     .replace(/\n$/, "")         // Remove trailing line return
@@ -15,24 +15,27 @@ const pathB = arrInputPaths[1]
     .split(',')
     .map(mapToVector);
 
-let pointsA = [{ x: 0, y: 0 }];
-let pointsB = [{ x: 0, y: 0 }];
+let pointsA = [{x: 0, y: 0, walkDist: 0}];
+let pointsB = [{x: 0, y: 0, walkDist: 0}];
 
 // Define a bounding box for the path max extents
-let boxA = { U: 0, D: 0, L: 0, R: 0 };
-let boxB = { U: 0, D: 0, L: 0, R: 0 };
+let boxA = {U: 0, D: 0, L: 0, R: 0};
+let boxB = {U: 0, D: 0, L: 0, R: 0};
 
 const walkPath = function (arrPath, arrPoints, box) {
-    let currentPos = { x: 0, y: 0 };
+    let currentPos = {x: 0, y: 0};
+    let walkDist = 0;
     arrPath.forEach(vector => {
         currentPos.x += vector.dir.x * vector.dist;
         currentPos.y += vector.dir.y * vector.dist;
+        walkDist += vector.dist;
         arrPoints.push({
             x: currentPos.x,
-            y: currentPos.y
+            y: currentPos.y,
+            walkDist
         });
-        if (currentPos.y > box.R) box.U = currentPos.y;
-        if (currentPos.y < box.R) box.D = currentPos.y;
+        if (currentPos.y > box.U) box.U = currentPos.y;
+        if (currentPos.y < box.D) box.D = currentPos.y;
         if (currentPos.x < box.L) box.L = currentPos.x;
         if (currentPos.x > box.R) box.R = currentPos.x;
     });
@@ -65,6 +68,7 @@ for (let indexA = 0; indexA < pointsA.length - 1; indexA++) {
             intersections.push({
                 x: int.x,
                 y: int.y,
+                wd: int.walkDist,
                 md: Math.abs(int.x) + Math.abs(int.y)
             });
         }
@@ -76,14 +80,26 @@ intersections = intersections.sort((p1, p2) => p1.md - p2.md);
 
 console.log(`Part 1: Distance = ${intersections[0].md}`);
 
+// Sort by walking distance
+intersections = intersections.sort((p1, p2) => p1.wd - p2.wd);
+
+console.log(`Part 2: Distance = ${intersections[0].wd}`);
+
 // Helper functions
 
 function isSegmentInBox(point1, point2, box) {
-    const testU = point1.y <= box.U && point2.y <= box.U;
-    const testD = point1.y >= box.D && point2.y >= box.D;
-    const testL = point1.x >= box.L && point2.x >= box.L;
-    const testR = point1.x <= box.R && point2.x <= box.R;
-    return testU && testD && testL && testR;
+    //Horizontal
+    if (point1.y === point2.y) {
+        const testY = point1.y <= box.U && point1.y >= box.D;
+        const testX = point1.x >= box.L && point1.x <= box.R || point2.x >= box.L && point2.x <= box.R;
+        return testY && testX;
+    }
+    // Vertical
+    if (point1.x === point2.x) {
+        const testX = point1.x <= box.R && point1.x >= box.L;
+        const testY = point1.y >= box.D && point1.y <= box.U || point2.y >= box.D && point2.y <= box.U;
+        return testY && testX;
+    }
 }
 
 function segmentsIntersection(pointA1, pointA2, pointB1, pointB2) {
@@ -98,13 +114,15 @@ function segmentsIntersection(pointA1, pointA2, pointB1, pointB2) {
     // If A is horizontal and B is vertical
     if (minBx === maxBx && minAy === maxAy) {
         if (minAx < minBx && maxAx > minBx && minBy < minAy && maxBy > minAy) {
-            return { x: minBx, y: minAy };
+            const walkDist = pointA1.walkDist + Math.abs(pointA1.x - minBx) + pointB1.walkDist + Math.abs(pointB1.y - minAy);
+            return {x: minBx, y: minAy, walkDist};
         }
     }
     // If A is vertical and B is horizontal
     if (minAx === maxAx && minBy === maxBy) {
         if (minBx < minAx && maxBx > minAx && minAy < minBy && maxAy > minBy) {
-            return { x: minAx, y: minBy };
+            const walkDist = pointA1.walkDist + Math.abs(pointB1.x - minAx) + pointB1.walkDist + Math.abs(pointA1.y - minBy);
+            return {x: minAx, y: minBy, walkDist};
         }
     }
     return false;
@@ -112,7 +130,7 @@ function segmentsIntersection(pointA1, pointA2, pointB1, pointB2) {
 
 function mapToVector(s) {
     const dist = parseInt(s.substr(1), 10);
-    let dir = { x: 0, y: 0 };
+    let dir = {x: 0, y: 0};
     switch (s[0]) {
         case "U":
             dir.y++;
@@ -130,7 +148,7 @@ function mapToVector(s) {
             console.error('mapToVector: Unknown direction');
     }
     // Return a direction and distance
-    return { dir, dist };
+    return {dir, dist};
 }
 
 // End Process (gracefully)
