@@ -7,10 +7,12 @@ const parser = require('./parser.mjs');
 
 // Parse Input
 
-const inputFileName = 'inputFrom2.txt';
+const inputFileName = 'input.txt';
 const arrInput = parser.singleLine.commaSeparated.toIntArray(
     require('fs').readFileSync(`${__dirname}/${inputFileName}`, 'utf8')
 );
 
-const test = run(12, 2, arrInput);
-console.log(test);
+run(1, 2, arrInput);
+
+// End Process (gracefully)
+process.exit(0);
