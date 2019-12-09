@@ -1,0 +1,14 @@
+const sc = require('./scalableCollection.mjs');
+const a = sc({1:"one"});
+console.log(a.get(1));
+console.log(a.get("1"));
+console.log(a.get(2));
+console.log(a.get(24));
+const another = a.dump();
+const a2 = sc(another);
+console.log(a2.get(1));
+a2.set(1,"two");
+console.log(a2.get(1));
+console.log(a.get(1));
+const a2Sliced = a2.sliceToArray(1,60);
+console.log(a2Sliced);
