@@ -15,7 +15,7 @@ module.exports = function (objInitialState, defaultValue = "") {
     let maxY = false;
 
     function indexesToKey(indexX, indexY) {
-        return `X${indexX}Y${indexY}`
+        return `X${indexX}Y${indexY}`;
     }
 
     function get(indexX, indexY) {
