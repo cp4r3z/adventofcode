@@ -5,7 +5,7 @@
 const parser = require('./parser.mjs');
 
 // Parse Input
-let inputFileName = 'input.txt';
+let inputFileName = 'inputtest.txt';
 const arrInput = parser.multiLine.toStrArray(inputFileName);
 
 // Populate an array of moon objects with the initial positions and velocities
@@ -24,11 +24,14 @@ let moons = arrInput.map(s => {
     }
 });
 
+const moonsStart = JSON.parse(JSON.stringify(moons));
+
 let steps = 0;
 
-let frequencyX=false;
-let frequencyY=false;
-let frequencyZ=false;
+let frequencyX = false;
+let frequencyY = false;
+let frequencyZ = false;
+let allFrequenciesFound = false;
 
 do {
     for (let i = 0; i < moons.length; i++) {
@@ -62,13 +65,52 @@ do {
         }
     }
 
+    /// no i think we need to go moon by moon.
+    // also the initial state might not be at 0....
+
+    let frequencyXCandidate=true;
+    let frequencyYCandidate=true;
+    let frequencyZCandidate=true;
+
     for (let i = 0; i < moons.length; i++) {
         moons[i].pos.x = moons[i].pos.x + moons[i].vel.x;
+        if (!frequencyX && frequencyXCandidate) {
+            if(moons[i].pos.x === moonsStart[i].pos.x){
+                frequencyXCandidate =  steps+1;
+            } else{
+                frequencyXCandidate=false;
+            }
+        }
+
         moons[i].pos.y = moons[i].pos.y + moons[i].vel.y;
+        if (!frequencyY && frequencyYCandidate) {
+
+            frequencyYCandidate = moons[i].pos.y === moonsStart[i].pos.y ? steps+1 : false;
+        }
+
         moons[i].pos.z = moons[i].pos.z + moons[i].vel.z;
+        if (!frequencyZ && frequencyZCandidate) {
+
+            frequencyZCandidate = moons[i].pos.z === moonsStart[i].pos.z ? steps+1 : false;
+        }
     }
+
+    if (frequencyXCandidate>1){
+        //console.log('frequencyXCandidate found: '+frequencyXCandidate);
+        frequencyX = frequencyXCandidate;
+    }
+    if (frequencyYCandidate>1) frequencyY = frequencyYCandidate;
+    if (frequencyZCandidate>1) frequencyZ = frequencyZCandidate;
+
+    allFrequenciesFound = frequencyX && frequencyY && frequencyZ;
+
     steps++;
-} while (steps < 1000);
+} while (!allFrequenciesFound && steps<3000);
+
+console.log('freqX: '+frequencyX);
+console.log('freqY: '+frequencyY);
+console.log('freqZ: '+frequencyZ);
+
 
 const energy = moons.reduce((total, moon) => {
     const potential = Math.abs(moon.pos.x) + Math.abs(moon.pos.y) + Math.abs(moon.pos.z);
@@ -78,7 +120,7 @@ const energy = moons.reduce((total, moon) => {
 //333494 is too high
 //333160 is too high
 
-console.log(energy)
+//console.log(energy)
 
 // End Process (gracefully)
 process.exit(0);
