@@ -28,9 +28,10 @@ const moonsStart = JSON.parse(JSON.stringify(moons));
 
 let steps = 0;
 
-let frequencyX = false;
-let frequencyY = false;
-let frequencyZ = false;
+// let frequencyX = false;
+// let frequencyY = false;
+// let frequencyZ = false;
+let freqs = Array(4).fill(false);
 let allFrequenciesFound = false;
 
 do {
@@ -66,56 +67,45 @@ do {
     }
 
     /// no i think we need to go moon by moon.
+    
     // also the initial state might not be at 0....
 
-    let frequencyXCandidate=true;
-    let frequencyYCandidate=true;
-    let frequencyZCandidate=true;
+    let freqsCandidates = Array(4).fill(true);
 
     for (let i = 0; i < moons.length; i++) {
         moons[i].pos.x = moons[i].pos.x + moons[i].vel.x;
-        if (!frequencyX && frequencyXCandidate) {
-            if(moons[i].pos.x === moonsStart[i].pos.x){
-                frequencyXCandidate =  steps+1;
-            } else{
-                frequencyXCandidate=false;
-            }
-        }
 
         moons[i].pos.y = moons[i].pos.y + moons[i].vel.y;
-        if (!frequencyY && frequencyYCandidate) {
-
-            frequencyYCandidate = moons[i].pos.y === moonsStart[i].pos.y ? steps+1 : false;
-        }
 
         moons[i].pos.z = moons[i].pos.z + moons[i].vel.z;
-        if (!frequencyZ && frequencyZCandidate) {
 
-            frequencyZCandidate = moons[i].pos.z === moonsStart[i].pos.z ? steps+1 : false;
+        if (!freqs[i] &&
+            freqsCandidates[i] &&
+            moons[i].pos.x === moonsStart[i].pos.x &&
+            moons[i].pos.y === moonsStart[i].pos.y &&
+            moons[i].pos.z === moonsStart[i].pos.z) {
+            freqsCandidates[i] = steps+1;
+        } else {
+            freqsCandidates[i] = false;
         }
+
     }
 
-    if (frequencyXCandidate>1){
-        //console.log('frequencyXCandidate found: '+frequencyXCandidate);
-        frequencyX = frequencyXCandidate;
-    }
-    if (frequencyYCandidate>1) frequencyY = frequencyYCandidate;
-    if (frequencyZCandidate>1) frequencyZ = frequencyZCandidate;
+    freqsCandidates.forEach((candidate, i) => {
+        if (candidate > 1) freqs[i] = candidate;
+    });
 
-    allFrequenciesFound = frequencyX && frequencyY && frequencyZ;
+    allFrequenciesFound = freqs.reduce((allFound, f) => f > 1 && allFound, true);
 
     steps++;
-} while (!allFrequenciesFound && steps<3000);
+} while (!allFrequenciesFound && steps < 3000);
 
-console.log('freqX: '+frequencyX);
-console.log('freqY: '+frequencyY);
-console.log('freqZ: '+frequencyZ);
-
+freqs.forEach((f,i)=>console.log(`freq[${i}]: ${f}`));
 
 const energy = moons.reduce((total, moon) => {
     const potential = Math.abs(moon.pos.x) + Math.abs(moon.pos.y) + Math.abs(moon.pos.z);
     const kinetic = Math.abs(moon.vel.x) + Math.abs(moon.vel.y) + Math.abs(moon.vel.z);
-    return total + potential * kinetic
+    return total + potential * kinetic;
 }, 0);
 //333494 is too high
 //333160 is too high
