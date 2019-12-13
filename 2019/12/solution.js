@@ -24,6 +24,7 @@ let moons = arrInput.map(s => {
     }
 });
 
+let moonStates = [];
 const moonsStart = JSON.parse(JSON.stringify(moons));
 
 let steps = 0;
@@ -31,44 +32,38 @@ let steps = 0;
 // let frequencyX = false;
 // let frequencyY = false;
 // let frequencyZ = false;
-let freqs = Array(4).fill(false);
+let freqs = Array(4).fill(0);
+freqs = freqs.map(f=>Array(1));
+
 let allFrequenciesFound = false;
 
 do {
     for (let i = 0; i < moons.length; i++) {
         for (let j = i + 1; j < moons.length; j++) {
-            // TODO: DRY UP
-
-            if (moons[i].pos.x > moons[j].pos.x) {
-                moons[i].vel.x = moons[i].vel.x - 1;
-                moons[j].vel.x = moons[j].vel.x + 1;
-            }
-            if (moons[i].pos.x < moons[j].pos.x) {
-                moons[i].vel.x = moons[i].vel.x + 1;
-                moons[j].vel.x = moons[j].vel.x - 1;
-            }
-            if (moons[i].pos.y > moons[j].pos.y) {
-                moons[i].vel.y = moons[i].vel.y - 1;
-                moons[j].vel.y = moons[j].vel.y + 1;
-            }
-            if (moons[i].pos.y < moons[j].pos.y) {
-                moons[i].vel.y = moons[i].vel.y + 1;
-                moons[j].vel.y = moons[j].vel.y - 1;
-            }
-            if (moons[i].pos.z > moons[j].pos.z) {
-                moons[i].vel.z = moons[i].vel.z - 1;
-                moons[j].vel.z = moons[j].vel.z + 1;
-            }
-            if (moons[i].pos.z < moons[j].pos.z) {
-                moons[i].vel.z = moons[i].vel.z + 1;
-                moons[j].vel.z = moons[j].vel.z - 1;
+            for (let xyz of ['x', 'y', 'z']) {
+                if (moons[i].pos[xyz] > moons[j].pos[xyz]) {
+                    moons[i].vel[xyz] = moons[i].vel[xyz] - 1;
+                    moons[j].vel[xyz] = moons[j].vel[xyz] + 1;
+                }
+                if (moons[i].pos[xyz] < moons[j].pos[xyz]) {
+                    moons[i].vel[xyz] = moons[i].vel[xyz] + 1;
+                    moons[j].vel[xyz] = moons[j].vel[xyz] - 1;
+                }
             }
         }
     }
 
     /// no i think we need to go moon by moon.
-    
+    // oh, and you have to match velocity!!!
     // also the initial state might not be at 0....
+
+    /// you need to:
+    // a: figure out if there are regular periods "freqs". hope to god there are.
+    // b: record the period and an offset
+    // c: take the largest period, and start multiplying. checking the modulos of the others as you go
+
+    // store the state
+    moonStates.push(JSON.parse(JSON.stringify(moons)));
 
     let freqsCandidates = Array(4).fill(true);
 
@@ -79,28 +74,39 @@ do {
 
         moons[i].pos.z = moons[i].pos.z + moons[i].vel.z;
 
-        if (!freqs[i] &&
-            freqsCandidates[i] &&
-            moons[i].pos.x === moonsStart[i].pos.x &&
-            moons[i].pos.y === moonsStart[i].pos.y &&
-            moons[i].pos.z === moonsStart[i].pos.z) {
-            freqsCandidates[i] = steps+1;
-        } else {
-            freqsCandidates[i] = false;
-        }
+        // frequency not yet found -- maybe there are multiples???
+        if (freqs[i].length===0) {
+            // and there's a candidate possible
+            if (freqsCandidates[i]) {
+                // go through all previous states...
+                let candidateFound = false;
+                let imState = 0;
+                do {
+                    if (moonEqualsmoon(moons[i], moonStates[imState][i])) {
+                        freqsCandidates[i] = steps + 1 ;//- imState;
+                        candidateFound = true;
+                    }
+                    imState++;
+                } while (!candidateFound && imState < moonStates.length);
+                if (candidateFound === false) freqsCandidates[i] = false;
 
+            }
+        }
     }
 
     freqsCandidates.forEach((candidate, i) => {
-        if (candidate > 1) freqs[i] = candidate;
+        if (candidate > 1) {
+            freqs[i].push(candidate);
+            console.log('candidate found: freq' + i + ' ' + candidate);
+        }
     });
 
-    allFrequenciesFound = freqs.reduce((allFound, f) => f > 1 && allFound, true);
+    allFrequenciesFound = freqs.reduce((allFound, f) => f.length>0 && allFound, true);
 
     steps++;
-} while (!allFrequenciesFound && steps < 3000);
+} while (!allFrequenciesFound); // && steps < 3000);
 
-freqs.forEach((f,i)=>console.log(`freq[${i}]: ${f}`));
+freqs.forEach((f, i) => console.log(`freq[${i}]: ${f}`));
 
 const energy = moons.reduce((total, moon) => {
     const potential = Math.abs(moon.pos.x) + Math.abs(moon.pos.y) + Math.abs(moon.pos.z);
@@ -111,6 +117,19 @@ const energy = moons.reduce((total, moon) => {
 //333160 is too high
 
 //console.log(energy)
+
+function stateEqualsState(state1, state2) {
+
+}
+
+function moonEqualsmoon(moon1, moon2) {
+    return moon1.pos.x === moon2.pos.x &&
+        moon1.pos.y === moon2.pos.y &&
+        moon1.pos.z === moon2.pos.z &&
+        moon1.vel.x === moon2.vel.x &&
+        moon1.vel.y === moon2.vel.y &&
+        moon1.vel.z === moon2.vel.z;
+}
 
 // End Process (gracefully)
 process.exit(0);
