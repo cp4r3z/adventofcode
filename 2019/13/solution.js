@@ -29,35 +29,78 @@ let tile = {
     y: null,
     type: null
 };
+
+let score = null;
+let blocks = 1;
+
+let pos = {
+    paddle: 10,
+    ball: 10
+};
+
+// TODO: Set mem
+computer.set(0, 2);
+
 do {
 
-    output = computer.run(true,1); // Unsure of input signal
-    switch (i) {
-        case 0:
-            //x pos
-            tile.x = output;
-            break;
-        case 1:
-            //y pos
-            tile.y = output;
-            break;
-        case 2:
-            //type
-            tile.type = output;
-            grid.set(tile.x,tile.y,tile.type);
-            break;
+
+    do {
+
+        let tilt = pos.ball - pos.paddle;
+        if (tilt > 0) tilt = 1;
+        if (tilt < 0) tilt = -1;
+        //console.log('tilt: ' + tilt)
+
+        output = computer.run(true, tilt);
+        switch (i) {
+            case 0:
+                //x pos
+                tile.x = output;
+                break;
+            case 1:
+                //y pos
+                tile.y = output;
+                break;
+            case 2:
+                //type
+                tile.type = output;
+                if (tile.x === -1 && tile.y === 0) {
+                    //score
+                    score = output;
+                    break;
+                }
+                if (output === 3) pos.paddle = tile.x; //paddle
+                if (output === 4) pos.ball = tile.x; //ball
+                grid.set(tile.x, tile.y, tile.type);
+                break;
+        }
+        i = i < 2 ? i + 1 : 0;
+        blocks = 0;
+        for (let coor in grid.grid) {
+            if (grid.grid[coor].value === 2) blocks++;
+        }
+        //console.log('blocks: ' + blocks);
+
+        //grid.print(true);
+    } while (output !== false);
+
+    //console.log(Object.keys(grid.dump()).length);
+
+    blocks = 0;
+    for (let coor in grid.grid) {
+        if (grid.grid[coor].value === 2) blocks++;
     }
-    i = i < 2 ? i + 1 : 0;
-} while (output!==false);
+    console.log('blocks: ' + blocks);
 
-//console.log(Object.keys(grid.dump()).length);
+    grid.print(true);
 
-let blocks=0;
 
-for (let coor in grid.grid){
-    if (grid.grid[coor].value===2) blocks++;
-}
-console.log(blocks);
+} while (blocks > 0);
+//output score
+
+//new function that takes an input and returns.... score? number of blocks? position of ball and position of paddle
+
+
 
 // End Process (gracefully)
 process.exit(0);

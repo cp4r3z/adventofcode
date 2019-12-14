@@ -65,6 +65,10 @@ module.exports = function (state) {
         }
     }
 
+    function set(memoryPosition, value){
+        intCodes.set(memoryPosition,value);
+    }
+
     function run(inputPhase, inputSignal) {
         let output = false;
         let halt = false;
@@ -160,5 +164,5 @@ module.exports = function (state) {
     }
 
     // Reveal the following
-    return { run, getState };
+    return { run, getState, set };
 };

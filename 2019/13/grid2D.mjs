@@ -56,15 +56,27 @@ module.exports = function (objInitialState, defaultValue = "") {
         // TODO: Return an array of columns?
     }
 
-    function print() {
-        for (let y = maxY; y >= minY; y--) {
-            let line = '';
-            for (let x = minX; x <= maxX; x++) {
-                //const test = get(x,y)
-                line += get(x, y).value;
-            }
-            console.log(line);
+    function print(yDown=false) {
+        if (yDown){
+            for (let y = minY; y <= maxY; y++) {
+                let line = '';
+                for (let x = minX; x <= maxX; x++) {
+                    //const test = get(x,y)
+                    line += get(x, y).value;
+                }
+                console.log(line);
+            }        
+        } else{
+            for (let y = maxY; y >= minY; y--) {
+                let line = '';
+                for (let x = minX; x <= maxX; x++) {
+                    //const test = get(x,y)
+                    line += get(x, y).value;
+                }
+                console.log(line);
+            }        
         }
+        
         return true;
     }
 
