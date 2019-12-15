@@ -9,17 +9,42 @@ let inputFileName = 'input.txt';
 const arrInput = parser.multiLine.toStrArray(inputFileName);
 
 let reactions = [];
-let reserves = {
-    'ORE':0
-};
 
+let reserves={};
 reYields = /(.+) => (.+)/g;
 
 arrInput.forEach(fillReactions);
+let reservesBackup = JSON.parse(JSON.stringify(reserves));
 
-const oneFuel = getOreRequirement('FUEL', 1);
+// const oneFuel = getOreRequirement('FUEL', 1);
 
-console.log(oneFuel);
+// console.log(oneFuel);
+
+// part 2 i guess is finding the limiting reagent....
+// or maybe find a pattern is the ore efficiency.....
+
+let request = 1;
+let efficiency = false;
+let efficiencies = [];
+let found=false;
+do{
+    reserves = JSON.parse(JSON.stringify(reservesBackup));
+    const oreRequired = getOreRequirement('FUEL', request);
+    efficiency = oreRequired/request;
+
+    if (request===1){
+        console.log(`Part 1: ORE Required = ${oreRequired}`);
+    }
+
+    if(request%1000===0)console.log(request+' : '+efficiency);
+found = efficiencies.includes(efficiency);
+efficiencies.push(efficiency);
+
+request++;
+}while(!found);
+console.log(request);
+console.log(request+' : '+efficiency);
+
 // recursive function 
 
 function getOreRequirement(requestedChem, requestedQty) {
