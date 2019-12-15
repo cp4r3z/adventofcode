@@ -23,7 +23,11 @@ let reservesBackup = JSON.parse(JSON.stringify(reserves));
 // part 2 i guess is finding the limiting reagent....
 // or maybe find a pattern is the ore efficiency.....
 
-let request = 1;
+// part 2 answer is 3061522
+
+// maybe the way about this is binary search to converge using part 1 as the seed.
+
+let request = 3061520;
 let efficiency = false;
 let efficiencies = [];
 let found=false;
@@ -31,12 +35,14 @@ do{
     reserves = JSON.parse(JSON.stringify(reservesBackup));
     const oreRequired = getOreRequirement('FUEL', request);
     efficiency = oreRequired/request;
+    const trillion = 1e12;
+    const usage = oreRequired/trillion;
 
     if (request===1){
         console.log(`Part 1: ORE Required = ${oreRequired}`);
     }
 
-    if(request%1000===0)console.log(request+' : '+efficiency);
+    if(request%1===0)console.log(request+' : '+efficiency+' : ore='+oreRequired+' : usage='+usage);
 found = efficiencies.includes(efficiency);
 efficiencies.push(efficiency);
 
