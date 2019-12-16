@@ -81,6 +81,7 @@ const pathToStation = findStation({
 
 function findStation(_intCodeState, _droidPosition, _pathSoFar) {
 
+    let pathToStation = [];
     // find available moves
     moves.forEach(move => {
         let path = [..._pathSoFar];
@@ -112,16 +113,16 @@ function findStation(_intCodeState, _droidPosition, _pathSoFar) {
 
         if (output === 1) {
             grid.set(drP.x, drP.y, path.length + 1);
-            return findStation(computer.getState(), drP,path );
+            pathToStation = findStation(computer.getState(), drP, path);
         }
 
         if (output == 2) {
-            return path;
+            pathToStation = path;
         }
 
     });
 
-
+     return pathToStation;
 }
 
 function objCopy(obj) {
