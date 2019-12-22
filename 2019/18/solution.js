@@ -6,7 +6,7 @@ const parser = require('./parser.mjs');
 const grid2D = require('./grid2D.mjs');
 
 // Parse Input
-let inputFileName = 'inputtest2.txt';
+let inputFileName = 'input.txt';
 const arrInput = parser.multiLine.toStrArray(inputFileName);
 
 // This should be a shared util enum
@@ -76,7 +76,8 @@ map.set(start.x, start.y, '.'); //?
  */
 
 let solution = {
-    steps: null,
+    //steps: null,
+    steps: 6048, // "cheating" // 6048 is too high, btw
     path: null
 };
 
@@ -85,17 +86,31 @@ floodAndFind(map.dump(), start, 0, doors, keys);
 // take in a grid state and door/key state and return a list of keys with their distances
 // TODO: This should be an object as it's getting complex
 function floodAndFind(gridState, _start, steps, _doors, _keys) {
+    console.log(`steps=${steps}`);
+
     // build a grid (top level)
+
+    const d1a = new Date();
+
     const grid = grid2D(gridState);
+    const floodGrid = grid2D(gridState);
+   
+    const d2a = new Date();
+    const diffa = (d2a-d1a)/1000;
+    console.log(`Grid build time: ${diffa} sec`);
+
+    
     let keysWithDistance = objCopy(_keys);
 
     // Mark locked doors as walls
     for (const door in _doors) {
         if (_doors[door].unlocked) {
             grid.set(_doors[door].x, _doors[door].y, '.');
+            floodGrid.set(_doors[door].x, _doors[door].y, '.');
         }
         else {
             grid.set(_doors[door].x, _doors[door].y, '#');
+            floodGrid.set(_doors[door].x, _doors[door].y, '#');
         }
     }
 
@@ -103,12 +118,17 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
     for (const key in _keys) {
         if (_keys[key].found) {
             grid.set(_keys[key].x, _keys[key].y, '.');
+            floodGrid.set(_keys[key].x, _keys[key].y, '.');
         }
     }
 
     let startPath = [];
 
-    flood(grid.dump(), _start, startPath);
+    const d1 = new Date();
+    flood(_start, startPath);
+    const d2 = new Date();
+    const diff = (d2-d1)/1000;
+    console.log(`Flood time: ${diff} sec`);
     /**
      * for each key in keys with distance, 
      * store new key and door state
@@ -118,12 +138,26 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
      * OTHERWISE keep going: push new values into flood and find
      */
 
-    for (const key in keysWithDistance) {
-        console.log(`for const ${key}`);
+    // TODO: Idea for improvement: convert to array, sort by distance, map just keys
+
+    const keyWDArray = Object.keys(keysWithDistance).map(k => {
+        return {
+            key: k,
+            value: keysWithDistance[k]
+        };
+    }).sort((k1, k2) => {
+        if (!k2.value.distance && !k1.value.distance) return 0;
+        if (k1.value.distance && !k2.value.distance) return -1;
+        if (k2.value.distance && !k1.value.distance) return 1;
+        return k1.value.distance - k2.value.distance;
+    }).map(keyValue => keyValue.key);//.slice(0, 2); // !!!! REMOVE SLICE !!!!
+
+    for (const key of keyWDArray) {
+        //for (const key in keysWithDistance) {
         // Find all reachable keys
         if (keysWithDistance[key].distance) {
             // Continue finding if the total number of steps is less than the best solution so far
-            const totalStepsToNextKey = keysWithDistance[key].distance + solution.steps;
+            const totalStepsToNextKey = keysWithDistance[key].distance + steps;
             if (solution.steps === null || totalStepsToNextKey < solution.steps) {
                 let newKeys = objCopy(_keys);
                 newKeys[key].found = true;
@@ -141,6 +175,7 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
                     allKeysFound = allKeysFound && !!newKeys[k].found;
                 }
                 if (allKeysFound) {
+                    console.log(`Solution Found @ ${newSteps} steps`);
                     solution.steps = newSteps;
                 } else {
                     const newStart = {
@@ -155,8 +190,26 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
     }
 
     //TODO: Maybe this should just keep track of the steps?
-    function flood(_gridState, _pos, _path) {
-        const floodGrid = grid2D(_gridState);
+    function flood(_pos, _path) {
+        
+        //const floodGrid = grid2D(_gridState);
+        let totalKeysWithDistance = 0;
+        for (const k2 in keysWithDistance){
+            if (keysWithDistance[k2].distance) totalKeysWithDistance++;
+        }
+        //if (totalKeysWithDistance>2) return; // !!!!!!! REMOVE!!!!!!!
+
+        // ok, idea for another algorithm...
+        // keep moving in the direction of each key to "seed" the grid
+
+        // another idea... walls don't change. kinda. except doors.
+        // so, generate a list of all wall coordinates. check against that list?
+
+        // or, a custom 2dgrid that pre-populates all the walls
+        // "grid factory"
+
+        // grid build time is like .007 sec
+        // flood time takes up to 4 sec!!!
 
         moves.forEach(move => {
             let path = [..._path];
@@ -181,12 +234,15 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
                         keysWithDistance[gridAtPosition].distance = path.length + 1;
                     }
                     return;
+                    // maybe this is where we memo-ize?
                 }
+
+                if (solution.steps !== null && path.length + 1 >= solution.steps) return;
 
                 // if value, set to length and keep flooding
                 path.push(`x${drP.x}y${drP.y}`); //maybe do this sooner? maybe record key name
                 floodGrid.set(drP.x, drP.y, path.length + 1);
-                flood(floodGrid.dump(), drP, path);
+                flood(drP, path);
             }
         });
     }
