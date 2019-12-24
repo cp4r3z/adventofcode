@@ -2,6 +2,14 @@
  * https://adventofcode.com/2019/day/18
  */
 
+/**
+ * Notes
+ * 
+ * https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+ * 
+ */
+
+
 const parser = require('./parser.mjs');
 const grid2D = require('./grid2D.mjs');
 
@@ -77,29 +85,36 @@ map.set(start.x, start.y, '.'); //?
 
 let solution = {
     //steps: null,
-    steps: 6048, // "cheating" // 6048 is too high, btw
+    steps: 5903, // "cheating" // 6048 and 5902 are too high, btw. //5898 is wrong too
     path: null
 };
+
+let memo = {}; //lord help me....
+
+/**
+ * need a function to generate keys|pos
+ * memo[keys][pos]=copy of keyswithdistance
+ */
 
 floodAndFind(map.dump(), start, 0, doors, keys);
 
 // take in a grid state and door/key state and return a list of keys with their distances
 // TODO: This should be an object as it's getting complex
 function floodAndFind(gridState, _start, steps, _doors, _keys) {
-    console.log(`steps=${steps}`);
+    console.log(`steps=${steps} & Current solution: ${solution.steps}`);
 
     // build a grid (top level)
 
-    const d1a = new Date();
+    //const d1a = new Date();
 
     const grid = grid2D(gridState);
     const floodGrid = grid2D(gridState);
-   
-    const d2a = new Date();
-    const diffa = (d2a-d1a)/1000;
-    console.log(`Grid build time: ${diffa} sec`);
 
-    
+    // const d2a = new Date();
+    // const diffa = (d2a - d1a) / 1000;
+    // console.log(`Grid build time: ${diffa} sec`);
+
+
     let keysWithDistance = objCopy(_keys);
 
     // Mark locked doors as walls
@@ -124,11 +139,20 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
 
     let startPath = [];
 
-    const d1 = new Date();
-    flood(_start, startPath);
-    const d2 = new Date();
-    const diff = (d2-d1)/1000;
-    console.log(`Flood time: ${diff} sec`);
+    const keyPosKey = keysPosKey(_keys, _start);
+
+    if (memo[keyPosKey]) { // !!!!!!!!!!!!
+        keysWithDistance = objCopy(memo[keyPosKey]);
+    } else {
+        //const d1 = new Date();
+        flood(_start, startPath);
+        //const d2 = new Date();
+        //const diff = (d2 - d1) / 1000;
+        //console.log(`Flood time: ${diff} sec`);
+        memo[keyPosKey] = objCopy(keysWithDistance);
+    }
+
+
     /**
      * for each key in keys with distance, 
      * store new key and door state
@@ -191,13 +215,13 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
 
     //TODO: Maybe this should just keep track of the steps?
     function flood(_pos, _path) {
-        
+
         //const floodGrid = grid2D(_gridState);
         let totalKeysWithDistance = 0;
-        for (const k2 in keysWithDistance){
+        for (const k2 in keysWithDistance) {
             if (keysWithDistance[k2].distance) totalKeysWithDistance++;
         }
-        //if (totalKeysWithDistance>2) return; // !!!!!!! REMOVE!!!!!!!
+        //if (totalKeysWithDistance > 1) return; // !!!!!!! REMOVE!!!!!!!
 
         // ok, idea for another algorithm...
         // keep moving in the direction of each key to "seed" the grid
@@ -248,18 +272,13 @@ function floodAndFind(gridState, _start, steps, _doors, _keys) {
     }
 }
 
-/**
- * Returns the distance from p1 to p2
- * @param {x, y} p1 
- * @param {x, y} p2 
- * Returns false if there is no valid path
- */
-function getPath(p1, p2, grid) {
-    // is the grid relative?
-}
-
-function explore() {
-
+function keysPosKey(_keys, _pos) {
+    const sortedKeyString = Object.keys(_keys).filter(k =>{
+        return _keys[k].found;
+        }).sort().join('');
+    const posString = `X${_pos.x}Y${_pos.y}`;
+    //console.log(sortedKeyString + posString);
+    return sortedKeyString + posString;
 }
 
 function objCopy(obj) {
