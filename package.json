@@ -1,0 +1,23 @@
+{
+  "name": "adventofcode",
+  "version": "1.0.0",
+  "description": "http://adventofcode.com solutions",
+  "main": "index.js",
+  "dependencies": {
+    "underscore": "^1.12.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cp4r3z/adventofcode.git"
+  },
+  "author": "cp4r3z",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cp4r3z/adventofcode/issues"
+  },
+  "homepage": "https://github.com/cp4r3z/adventofcode#readme"
+}
