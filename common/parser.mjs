@@ -47,6 +47,8 @@ export const multiLine = {
     },
     doubleNewLineSeparated(inputFilePath) {
         return readInputFile(inputFilePath)
+            // Remove trailing line return
+            .replace(/\n$/, "")
             // Split by double line feed
             .split(/\n\n/);
     }
