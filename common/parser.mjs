@@ -45,6 +45,16 @@ export const multiLine = {
             // Split by line return
             .split(/\r?\n/);
     },
+    toIntArray(inputFilePath){
+        return readInputFile(inputFilePath)
+            // Remove whitespace
+            .trim()
+            // Remove trailing line return
+            .replace(/\r?\n$/, "")
+            // Split by line return
+            .split(/\r?\n/)
+            .map(mapToInt);
+    },
     doubleNewLineSeparated(inputFilePath) {
         return readInputFile(inputFilePath)
             // Remove trailing line return
