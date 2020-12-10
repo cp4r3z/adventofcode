@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import {readFileSync} from 'fs';
 
 function readInputFile(inputFilePath) {
     //return fs.readFileSync(`${__dirname}/${inputFileName}`, 'utf8');
@@ -45,7 +45,18 @@ export const multiLine = {
             // Split by line return
             .split(/\r?\n/);
     },
-    toIntArray(inputFilePath){
+    // grid.... ?
+    toArrayofStrArrays(inputFilePath) {
+        const strArrays = readInputFile(inputFilePath)
+            // Remove whitespace
+            .trim()
+            // Remove trailing line return
+            .replace(/\r?\n$/, "")
+            // Split by line return
+            .split(/\r?\n/);
+        return strArrays.map(s => s.split(''));
+    },
+    toIntArray(inputFilePath) {
         return readInputFile(inputFilePath)
             // Remove whitespace
             .trim()
