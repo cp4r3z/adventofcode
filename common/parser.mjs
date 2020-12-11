@@ -29,6 +29,9 @@ export const singleLine = {
     notSeparated: {
         toIntArray(inputFilePath) {
             return trimAndSplitBy(inputFilePath, '').map(mapToInt);
+        },
+        toStrArray(inputFilePath){
+            return trimAndSplitBy(inputFilePath, '');
         }
     },
     toString(inputFilePath) {
