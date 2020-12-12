@@ -1,4 +1,10 @@
 const CARDINALS = ['E', 'S', 'W', 'N'];
+const CARDINALS_2D = [
+    { x: 1, y: 0 },
+    { x: 0, y: -1 },
+    { x: -1, y: 0 },
+    { x: 0, y: 1 }
+];
 
 class Orientation {
     //create an enum?
@@ -6,13 +12,21 @@ class Orientation {
         return CARDINALS;
     }
 
-    constructor() {
-        //if (!['N', 'S', 'E', 'W'].includes(starting)) throw new Error('Invalid starting orientation');
-        this.index = 0; // East
+    constructor(starting) {
+        if (starting) {
+            if (!CARDINALS.includes(starting)) throw new Error('Invalid starting orientation');
+            this.index = CARDINALS.indexOf(starting);
+        } else {
+            this.index = 0; // East
+        }
     }
 
     get current() {
         return CARDINALS[this.index];
+    }
+
+    to2D() {
+        return CARDINALS_2D[this.index];
     }
 
     turn(direction) {
@@ -30,7 +44,7 @@ class Orientation {
         }
 
         //TODO: Can you do chaining by returning this?
-        return this.CARDINALS[this.index];
+        return CARDINALS[this.index];
     }
 }
 
