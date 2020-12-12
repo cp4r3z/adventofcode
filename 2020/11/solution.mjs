@@ -101,5 +101,11 @@ function countOccupied(_seats){
     return occupied;
 }
 
+// Returns an array of all the first seats visible from a given seat
+function firstSeatsVisible(y,x){
+    let visibleSeats = [];
+    
+}
+
 // End Process (gracefully)
 process.exit(0);
