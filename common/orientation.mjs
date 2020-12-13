@@ -25,12 +25,19 @@ class Orientation {
         return CARDINALS[this.index];
     }
 
+    convertCardinalTo2D(cardinal) {
+        return CARDINALS_2D[CARDINALS.indexOf(cardinal)];
+    }
+
     to2D() {
         return CARDINALS_2D[this.index];
     }
 
     turn(direction) {
-        switch (direction.toLowerCase()) {
+        let directionParsed = direction.toLowerCase();
+        if (directionParsed === 'l') directionParsed = 'ccw';
+        if (directionParsed === 'r') directionParsed = 'cw';
+        switch (directionParsed) {
             case 'cw':
                 this.index++;
                 if (this.index > 3) this.index = 0;
