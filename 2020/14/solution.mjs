@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 const program = [];
@@ -63,7 +63,7 @@ function subTotal(iProgram) {
         const value = instruction.value;
         const maskedValue = memPlusMask(subMask, convertDectoBin36Array(instruction.mem)); // mem not value
         const numFloatX = maskedValue.filter(b => b === 'X').length;
-        _subTotal+= value* Math.pow(2,numFloatX);
+        _subTotal += value * Math.pow(2, numFloatX);
     });
     return _subTotal;
 }
@@ -72,9 +72,29 @@ part2Total += subTotal(program.length - 1);
 
 // Working backwards from the 2nd to last mask...
 for (let iMask = program.length - 2; iMask > -1; iMask--) {
-    const mask = program[iMask].mask;
+    let mask = program[iMask].mask;
 
-    // now go up all the later masks to see if it'll be overwritten. adjust mask accordingly.
+    
+    program[iMask].instructions.forEach(instruction => {
+        const value = instruction.value;
+        let maskedMem = memPlusMask(mask, convertDectoBin36Array(instruction.mem));
+
+        // now go up all the later masks to see if it'll be overwritten. adjust mask accordingly.
+        for (let iLater = iMask + 1; iLater < program.length; iLater++) {
+            const test = overMask(maskedMem, program[iLater].mask);
+            maskedMem = overMask(maskedMem, program[iLater].mask);
+        }
+
+        const numFloatX = maskedMem.filter(b => b === 'X').length;
+        part2Total += value * Math.pow(2, numFloatX);
+
+        
+
+    });
+
+
+
+
 
 
     continue;
@@ -82,6 +102,32 @@ for (let iMask = program.length - 2; iMask > -1; iMask--) {
 
 }
 
+///part2 897882600452 is too low
+///part2 97729979887 is too low
+
+// mask curr is the current mask. maskPrev is a mask that will be applied later
+function overMask(maskCurr, maskLater) {
+    let result = getBits();
+    for (let i = 0; i < maskCurr.length; i++) {
+        const C = maskCurr[i];
+        const L = maskLater[i] === 'X' ? 'X' : parseInt(maskLater[i], 10);
+
+        if (C !== 'X' && L !== 'X' && C === 0 && L === 1) {
+            // neither are floating, and there's a mismatch
+            result = maskCurr;
+            break;
+        }
+
+        if (C === 'X' && L !== 'X') {
+            // L is 1 or 0, so choose the opposite
+            result[i] = L === 1 ? 0 : 1;
+            continue;
+        }
+
+        result[i] = C;
+    }
+    return result;
+}
 
 function processInstruction(instruction) {
     addresses[instruction.mem] = valuePlusMask(maskRunning, convertDectoBin36Array(instruction.value));
