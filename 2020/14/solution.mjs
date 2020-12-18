@@ -81,8 +81,12 @@ for (let iMask = program.length - 2; iMask > -1; iMask--) {
 
         // now go up all the later masks to see if it'll be overwritten. adjust mask accordingly.
         for (let iLater = iMask + 1; iLater < program.length; iLater++) {
-            const test = overMask(maskedMem, program[iLater].mask);
-            maskedMem = overMask(maskedMem, program[iLater].mask);
+            //const test = overMask(maskedMem, program[iLater].mask);
+            const maskLater = program[iLater].mask;
+            program[iLater].instructions.forEach(instructionLater=>{
+                let maskedMemLater = memPlusMask(maskLater, convertDectoBin36Array(instructionLater.mem));
+                maskedMem = overMask(maskedMem, maskedMemLater);
+            });
         }
 
         const numFloatX = maskedMem.filter(b => b === 'X').length;
@@ -104,6 +108,7 @@ for (let iMask = program.length - 2; iMask > -1; iMask--) {
 
 ///part2 897882600452 is too low
 ///part2 97729979887 is too low
+////     1254040949893 is too low
 
 // mask curr is the current mask. maskPrev is a mask that will be applied later
 function overMask(maskCurr, maskLater) {
