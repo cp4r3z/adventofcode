@@ -32,7 +32,8 @@ class Coordinate {
 }
 
 class Vertex {
-    constructor(active = false) {
+    constructor(coordinate, active = false) {
+        this.Coordinate = coordinate; // Coordinate object
         this.AdjacentVertices = []; // Neighbors
         this.Active = active; // bool
     }
@@ -66,26 +67,25 @@ class Graph {
 
     addVertex(coordinate, active = false) {
         const key = coordinate.toKey();
-        if (this.Vertices.has(key)) {
-            return this.Vertices.get(key);
-        } else {
-            const vertex = new Vertex(active);
-            this.Vertices.set(key, vertex);
+        let vertex = this.Vertices.get(key);
+        if (!vertex) {
+            vertex = new Vertex(coordinate, active);
+            this.Vertices.set(key, vertex); // Add new Vertex to the graph's map of Vertices
 
-            return vertex;
-            // TODO: IF ACTIVE, create all the neighbors - you can do this recursively here :-)
-            // After creating the neighbors, remember to add edges to them.
+            if (vertex.Active && vertex.AdjacentVertices.length < 26) {
+                this.addAdjacentVertices(coordinate);
+            }
         }
+        return vertex; // This is an existing or new vertex
     }
 
     addAdjacentVertices(coordinate) {
         const adjacentCoordinates = this.getAdjacentCoordinates(coordinate);
         adjacentCoordinates.forEach(adjacentCoordinate => {
-            //this.addVertex(coor, false); // TODO: Is this necessary?
             this.addEdge(coordinate, adjacentCoordinate);
         });
 
-        return adjacentCoordinates; //?
+        return adjacentCoordinates; // Not used
     }
 
     // "source" and "destination" terms imply direction. This does not matter for an UNDIRECTED edge
@@ -99,8 +99,18 @@ class Graph {
         return [sourceVertex, destinationVertex];
     }
 
-    setVertexActiveState(key, active) {
-        //TODO ?
+    // Performed from graph because adjacent vertices might need to be created
+    setVertexActiveState(coordinate, active) {
+        const key = coordinate.toKey();
+        const vertex = this.Vertices.get(key);
+        if (!vertex) throw `No Vertex at ${key}`;
+
+        vertex.Active = active;
+
+        // Logic could be moved down into Vertex, but it then Vertex would need a reference back to Graph.
+        if (vertex.Active && vertex.AdjacentVertices.length < 26) {
+            this.addAdjacentVertices(coordinate);
+        }
     }
 
     // TODO: Delete! Only use coor.toKey()

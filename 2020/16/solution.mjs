@@ -11,12 +11,9 @@ const inputFilePath = new URL('./tinput.txt', import.meta.url); // Is there a wa
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 const graph = new DataStructures.Graph();
-//const keyTest = graph.createKey(0, 0, -1);
+
 const testCoor = new DataStructures.Coordinate(0,0,-1);
 const vertexTest = graph.addVertex(testCoor, true);
-if (vertexTest.Active) {
-    graph.addAdjacentVertices(testCoor);
-}
 
 // End Process (gracefully)
 process.exit(0);
