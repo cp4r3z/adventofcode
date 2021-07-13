@@ -39,6 +39,7 @@ class Vertex {
     }
 
     addAdjacent(vertex) {
+        if (this.AdjacentVertices.some(v => v.Coordinate.toKey() === vertex.Coordinate.toKey())) return; // What if it's already in the array?
         this.AdjacentVertices.push(vertex);
     }
 
@@ -65,17 +66,19 @@ class Graph {
         this.Vertices = new Map();
     }
 
+    getVertex(coordinate) {
+        return this.Vertices.get(coordinate.toKey());
+    }
+
     addVertex(coordinate, active = false) {
-        const key = coordinate.toKey();
-        let vertex = this.Vertices.get(key);
+        let vertex = this.getVertex(coordinate);
         if (!vertex) {
             vertex = new Vertex(coordinate, active);
-            this.Vertices.set(key, vertex); // Add new Vertex to the graph's map of Vertices
-
-            if (vertex.Active && vertex.AdjacentVertices.length < 26) {
-                this.addAdjacentVertices(coordinate);
-            }
+            this.Vertices.set(coordinate.toKey(), vertex); // Add new Vertex to the graph's map of Vertices
         }
+
+        // This has to be done because "adjacent vertices" can be created as inactive before the vertices are initiated
+        if (active) this.setVertexActiveState(vertex, active); // This must be done after the vertex is actually added
         return vertex; // This is an existing or new vertex
     }
 
@@ -90,8 +93,9 @@ class Graph {
 
     // "source" and "destination" terms imply direction. This does not matter for an UNDIRECTED edge
     addEdge(sourceCoordinate, destinationCoordinate) {
-        const sourceVertex = this.addVertex(sourceCoordinate);
-        const destinationVertex = this.addVertex(destinationCoordinate);
+        const sourceVertex = this.getVertex(sourceCoordinate);
+        if (!sourceVertex) throw `sourceVertex not found at ${sourceCoordinate.toKey()}`;
+        const destinationVertex = this.getVertex(destinationCoordinate) || this.addVertex(destinationCoordinate);
 
         sourceVertex.addAdjacent(destinationVertex);
         destinationVertex.addAdjacent(sourceVertex);
@@ -100,23 +104,14 @@ class Graph {
     }
 
     // Performed from graph because adjacent vertices might need to be created
-    setVertexActiveState(coordinate, active) {
-        const key = coordinate.toKey();
-        const vertex = this.Vertices.get(key);
-        if (!vertex) throw `No Vertex at ${key}`;
-
+    setVertexActiveState(vertex, active) {
         vertex.Active = active;
 
         // Logic could be moved down into Vertex, but it then Vertex would need a reference back to Graph.
         if (vertex.Active && vertex.AdjacentVertices.length < 26) {
-            this.addAdjacentVertices(coordinate);
+            this.addAdjacentVertices(vertex.Coordinate);
         }
     }
-
-    // TODO: Delete! Only use coor.toKey()
-    // createKey(x, y, z) {
-    //     return `x${x}y${y}z${z}`;
-    // }
 
     getAdjacentCoordinates(coordinate) {
         const offsets = [-1, 0, 1];
@@ -132,22 +127,6 @@ class Graph {
         });
         return adjacentCoordinates;
     }
-
-    // ////////TODO! getAdjacentCoordinates!
-    // getAdjacentKeys(coordinate) {
-    //     const offsets = [-1, 0, 1];
-    //     const adjacentKeys = [];
-    //     offsets.forEach(ix => {
-    //         offsets.forEach(iy => {
-    //             offsets.forEach(iz => {
-    //                 const [dx, dy, dz] = [coordinate.x + ix, coordinate.y + iy, coordinate.z + iz];
-    //                 if (dx === coordinate.x && dy === coordinate.y && dz === coordinate.z) return;
-    //                 adjacentKeys.push(this.createKey(dx, dy, dz));
-    //             });
-    //         });
-    //     });
-    //     return adjacentKeys;
-    // }
 
     createCoor(key) {
         //TODO ?

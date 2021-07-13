@@ -8,12 +8,28 @@ import * as DataStructures from './DataStructures.mjs';
 
 // Parse Input
 const inputFilePath = new URL('./tinput.txt', import.meta.url); // Is there a way to do this from GitHub? Otherwise, hardcode input.
-const arrInput = multiLine.toStrArray(inputFilePath);
+const arrInput = multiLine.toArrayofStrArrays(inputFilePath);
 
-const graph = new DataStructures.Graph();
+/**
+ * Note on the "coordinate system"
+ * Traditionally, Y is "up" and Z is "out"
+ *  x 012
+ * z0 .#.
+ * z1 ..#
+ * z2 ###
+ */
 
-const testCoor = new DataStructures.Coordinate(0,0,-1);
-const vertexTest = graph.addVertex(testCoor, true);
+const pocketDimension = new DataStructures.Graph();
+
+// Initial State
+const y0 = 0; //Input "slice" is assumed to be on the XZ plane.
+arrInput.forEach((xArr, z) => {
+    xArr.forEach((state, x) => {
+        const coordinate = new DataStructures.Coordinate(x, y0, z);
+        const active = state == "#";
+        pocketDimension.addVertex(coordinate, active);
+    });
+});
 
 // End Process (gracefully)
 process.exit(0);
