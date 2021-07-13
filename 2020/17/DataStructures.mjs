@@ -22,7 +22,9 @@ class Vertex {
         this.AdjacentVertices.push(vertex);
     }
 
-    runRule() {
+    //TODO: Is this used?
+    runRule(fun) {
+        fun();
         //TODO
         // Pass in function for rule?
         // Return active state
@@ -112,8 +114,12 @@ class Graph {
         return adjacentCoordinates;
     }
 
-    //TODO
-    // runRule (can this accept a function?)
+    // Executes a callback function with this Graph as a the caller
+    runRule(cb) {
+        cb.call(this); //func.call(this, arg1, arg2)
+        //TODO
+        // Return active state ?
+    }
 
     // printGraph()
 }

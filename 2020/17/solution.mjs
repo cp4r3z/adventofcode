@@ -2,17 +2,18 @@
  * https://adventofcode.com/2020/day/17
  */
 
-import { multiLine } from '../../common/parser.mjs'; // Does this work on GitHub sites?
+import { multiLine } from '../../common/parser.mjs'; // TODO: Does this work on GitHub sites?
 
 import * as DataStructures from './DataStructures.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url); // Is there a way to do this from GitHub? Otherwise, hardcode input.
+const inputFilePath = new URL('./tinput.txt', import.meta.url); // TODO: Is there a way to do this from GitHub? Otherwise, hardcode input.
 const arrInput = multiLine.toArrayofStrArrays(inputFilePath);
 
 /**
  * Note on the "coordinate system"
- * Traditionally, Y is "up" and Z is "out"
+ * Traditionally, Y is "up" and Z is "out", 
+ * so we're not following the puzzle's "Z-UP" coordinate system. TODO?
  *  x 012
  * z0 .#.
  * z1 ..#
@@ -31,5 +32,31 @@ arrInput.forEach((xArr, z) => {
     });
 });
 
+const rule = function(){
+    console.log(this);
+    const cubeArray = [...this.Vertices].map(([key, value]) => value );
+    
+    // TODO: A "toggle" logic might save space but be less understandable?
+
+    const activeCubes = cubeArray.filter(v=>v.Active);
+    const cubesToSetInactive = [];
+    activeCubes.forEach(v=>{
+        const activeNeighbors = v.AdjacentVertices.filter(v=>v.Active);
+        if (!activeNeighbors.length===2 && !activeNeighbors.length===3) cubesToSetInactive.push(v);
+    });
+    
+    const inactiveCubes = cubeArray.filter(v=>!v.Active);
+    const cubesToSetActive = [];
+    inactiveCubes.forEach(v=>{
+        const activeNeighbors = v.AdjacentVertices.filter(v=>v.Active);
+        if (activeNeighbors.length === 3) cubesToSetActive.push(v);
+    });
+
+    cubesToSetInactive.forEach(v=>this.setVertexActiveState(v,false));  //TODO: Test
+    cubesToSetActive.forEach(v=>this.setVertexActiveState(v,true));  //TODO: Test
+};
+
+pocketDimension.runRule(rule);
+
 // End Process (gracefully)
-process.exit(0);
+process.exit(0); // TODO: Does this mess things up if it's a module?
