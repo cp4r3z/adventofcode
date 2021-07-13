@@ -56,3 +56,6 @@ fpsSlider.oninput = function () {
 	console.log(fps);
 	if (this.value !== null) fps = this.value;
 };
+
+// TODO: An increment pass function that increments pass and gets next state
+
