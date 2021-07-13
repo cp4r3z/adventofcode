@@ -1,26 +1,5 @@
-// class Graph {
-//     // defining vertex array and
-//     // adjacent list
-//     constructor(noOfVertices)
-//     {
-//         this.noOfVertices = noOfVertices;
-//         this.AdjList = new Map();
-//     }
-
-//     // functions to be implemented
-
-//     // addVertex(v)
-//     // addEdge(v, w)
-//     // printGraph()
-
-//     // bfs(v)
-//     // dfs(v)
-// }
-
-// todo: exports
-
 class Coordinate {
-    constructor(x, y, z) {
+    constructor(x = 0, y = 0, z = 0) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -43,13 +22,6 @@ class Vertex {
         this.AdjacentVertices.push(vertex);
     }
 
-    //TODO: maybe just delete this setter and assign directly.
-    // set Active(active) {
-    //     this.Active = !!active;
-    //     // IF ACTIVE is true, we should create all the neighbors. Done with Graph though.
-    //     // maybe return the adjacentVertices length? that can be easily done from the graph though.
-    // }
-
     runRule() {
         //TODO
         // Pass in function for rule?
@@ -57,13 +29,25 @@ class Vertex {
     }
 
     //TODO
-    //getAdjacents ?
     //removeAdjacent ?
 }
 
 class Graph {
     constructor() {
         this.Vertices = new Map();
+        this.Min = new Coordinate();
+        this.Max = new Coordinate();
+    }
+
+    // Add new Vertex to the graph's map of Vertices
+    mapVertex(vertex) {
+        this.Vertices.set(vertex.Coordinate.toKey(), vertex);
+
+        // Adjust min/max
+        ['x', 'y', 'z'].forEach(dim => {
+            if (vertex.Coordinate[dim] < this.Min[dim]) this.Min[dim] = vertex.Coordinate[dim];
+            else if (vertex.Coordinate[dim] > this.Max[dim]) this.Max[dim] = vertex.Coordinate[dim];
+        });
     }
 
     getVertex(coordinate) {
@@ -74,7 +58,7 @@ class Graph {
         let vertex = this.getVertex(coordinate);
         if (!vertex) {
             vertex = new Vertex(coordinate, active);
-            this.Vertices.set(coordinate.toKey(), vertex); // Add new Vertex to the graph's map of Vertices
+            this.mapVertex(vertex);
         }
 
         // This has to be done because "adjacent vertices" can be created as inactive before the vertices are initiated
@@ -128,9 +112,6 @@ class Graph {
         return adjacentCoordinates;
     }
 
-    createCoor(key) {
-        //TODO ?
-    }
     //TODO
     // runRule (can this accept a function?)
 
