@@ -1,5 +1,5 @@
 /**
- * https://adventofcode.com/2020/day/16
+ * https://adventofcode.com/2020/day/17
  */
 
 import { multiLine } from '../../common/parser.mjs'; // Does this work on GitHub sites?
@@ -24,9 +24,9 @@ const pocketDimension = new DataStructures.Graph();
 // Initial State
 const y0 = 0; //Input "slice" is assumed to be on the XZ plane.
 arrInput.forEach((xArr, z) => {
-    xArr.forEach((state, x) => {
+    xArr.forEach((str, x) => {
         const coordinate = new DataStructures.Coordinate(x, y0, z);
-        const active = state == "#";
+        const active = str === "#";
         pocketDimension.addVertex(coordinate, active);
     });
 });
