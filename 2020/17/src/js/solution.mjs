@@ -2,13 +2,27 @@
  * https://adventofcode.com/2020/day/17
  */
 
-import { multiLine } from '../../common/parser.mjs'; // TODO: Does this work on GitHub sites?
-
 import * as DataStructures from './DataStructures.mjs';
 
+//import { multiLine } from '../../../../common/parser.mjs'; // TODO: Does this work on GitHub sites? It uses fs module which needs to be bundled. :-(
+
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url); // TODO: Is there a way to do this from GitHub? Otherwise, hardcode input.
-const arrInput = multiLine.toArrayofStrArrays(inputFilePath);
+//const inputFilePath = new URL('../inputs/input.txt', import.meta.url); // TODO: Is there a way to do this from GitHub? Otherwise, hardcode input.
+//const arrInput = multiLine.toArrayofStrArrays(inputFilePath);
+
+// console.log(JSON.stringify(arrInput)); // Used to generate input string.
+
+const inputJSON = `[
+    ["#",".","#",".",".","#","#","#"],
+    [".","#",".",".",".",".","#","#"],
+    [".","#","#","#",".",".",".","#"],
+    [".",".","#","#","#","#",".","."],
+    [".",".",".",".","#","#","#","."],
+    ["#","#",".","#",".","#",".","#"],
+    [".",".","#",".",".","#","#","."],
+    ["#",".",".",".",".",".","#","#"]
+]`;
+const arrInput = JSON.parse(inputJSON);
 
 /**
  * Note on the "coordinate system"

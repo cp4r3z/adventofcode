@@ -7,7 +7,7 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.130.1';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.130.1/examples/jsm/controls/OrbitControls.js';
 
-import {states as States} from '../../solution.mjs'; // BROKEN, need to restructure project
+import { states as States } from './solution.mjs'; // BROKEN, need to restructure project
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -51,10 +51,10 @@ let pass = 0;
 let run = true; // maybe use something like this for start and stop
 
 function makePass() {
-	console.log(States[pass]); // Solution states
-	pass++;
 	console.log(pass);
-	setTimeout(makePass, 1000 / fps);
+	console.log(States[pass]); // Solution states
+	if (pass < 6) setTimeout(makePass, 1000 / fps);
+	pass++;
 }
 makePass();
 
@@ -63,6 +63,3 @@ fpsSlider.oninput = function () {
 	console.log(fps);
 	if (this.value !== null) fps = this.value;
 };
-
-// TODO: An increment pass function that increments pass and gets next state
-
