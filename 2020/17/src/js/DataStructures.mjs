@@ -69,11 +69,12 @@ class Graph {
             .length;
     }
 
-    getVertexKeyAndState() {
+    getVertexStates() {
         return [...this.Vertices]
             .map(([key, value]) => {
                 return {
                     key,
+                    coordinate: value.Coordinate,
                     active: value.Active
                 };
             });

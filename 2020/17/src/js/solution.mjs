@@ -80,7 +80,7 @@ while (cycle <= 6) {
     const startCycle = Date.now();
     // Record the current state (an array of objects {key, active})
     // TODO: Consider only recording changes to increase performance
-    states.push(pocketDimension.getVertexKeyAndState());
+    states.push(pocketDimension.getVertexStates());
     dimensionMinMax.push(pocketDimension.getGraphExtents());
     // Log the number of active cubes (for puzzle solution)
     const numberActiveCubes = pocketDimension.getActiveVertexCount();
