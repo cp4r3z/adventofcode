@@ -39,15 +39,16 @@ const rule = function () {
     // TODO: Use async map of promises (maybe that will increase performance?)
 
     this.toValueArray().forEach(cube => {
-        const activeNeighbors = cube.AdjacentVertices.filter(v => v.Active);
+        const activeNeighbors = cube.countActiveAdjacents();
+
         if (cube.Active) {
             // If a cube is active and exactly 2 or 3 of its neighbors are also active,
             // the cube remains active. Otherwise, the cube becomes inactive.
-            if (!(activeNeighbors.length === 2 || activeNeighbors.length === 3)) cubesToToggle.push(cube);
+            if (!(activeNeighbors === 2 || activeNeighbors === 3)) cubesToToggle.push(cube);
         } else {
             // If a cube is inactive but exactly 3 of its neighbors are active,
             // the cube becomes active. Otherwise, the cube remains inactive.
-            if (activeNeighbors.length === 3) cubesToToggle.push(cube);
+            if (activeNeighbors === 3) cubesToToggle.push(cube);
         }
     });
 

@@ -22,13 +22,19 @@ class Vertex {
         this.AdjacentVertices.push(vertex);
     }
 
-    //TODO: Is this used?
-    runRule(fun) {
-        fun();
-        //TODO
-        // Pass in function for rule?
-        // Return active state
+    countActiveAdjacents() {
+        return this.AdjacentVertices.filter(v => v.Active).length;
     }
+
+    //TODO: Is this used?
+    // runRule(fun) {
+    //     fun();
+    //     //TODO
+    //     // Pass in function for rule?
+    //     // Return active state
+    // }
+
+
 
     //TODO
     //removeAdjacent ?
@@ -128,7 +134,7 @@ class Graph {
         // Return active state ?
     }
 
-    toValueArray(){
+    toValueArray() {
         return [...this.Vertices].map(([key, value]) => value);
     }
 
