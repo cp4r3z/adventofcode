@@ -1,12 +1,13 @@
 class Coordinate {
-    constructor(x = 0, y = 0, z = 0) {
+    constructor(x = 0, y = 0, z = 0, w = 0) {
         this.x = x;
         this.y = y;
         this.z = z;
+        this.w = w; // Part 1 only had 3 dimentions, which is why this is listed last
     }
 
     toKey() {
-        return `x${this.x}y${this.y}z${this.z}`;
+        return `x${this.x}y${this.y}z${this.z}w${this.w}`;
     }
 }
 
@@ -25,19 +26,6 @@ class Vertex {
     countActiveAdjacents() {
         return this.AdjacentVertices.filter(v => v.Active).length;
     }
-
-    //TODO: Is this used?
-    // runRule(fun) {
-    //     fun();
-    //     //TODO
-    //     // Pass in function for rule?
-    //     // Return active state
-    // }
-
-
-
-    //TODO
-    //removeAdjacent ?
 }
 
 class Graph {
@@ -52,7 +40,7 @@ class Graph {
         this.Vertices.set(vertex.Coordinate.toKey(), vertex);
 
         // Adjust min/max
-        ['x', 'y', 'z'].forEach(dim => {
+        ['x', 'y', 'z', 'w'].forEach(dim => {
             if (vertex.Coordinate[dim] < this.Min[dim]) this.Min[dim] = vertex.Coordinate[dim];
             else if (vertex.Coordinate[dim] > this.Max[dim]) this.Max[dim] = vertex.Coordinate[dim];
         });
@@ -80,8 +68,8 @@ class Graph {
             });
     }
 
-    getGraphExtents(){
-        return {min:this.Min, max:this.Max};
+    getGraphExtents() {
+        return { min: this.Min, max: this.Max };
     }
 
     addVertex(coordinate, active = false) {
@@ -122,20 +110,24 @@ class Graph {
         vertex.Active = active;
 
         // Logic could be moved down into Vertex, but it then Vertex would need a reference back to Graph.
-        if (vertex.Active && vertex.AdjacentVertices.length < 26) {
+        if (vertex.Active && vertex.AdjacentVertices.length < 80) {
             this.addAdjacentVertices(vertex.Coordinate);
         }
     }
 
     getAdjacentCoordinates(coordinate) {
-        const offsets = [-1, 0, 1];
+        const offsets = [-1, 0, 1]; // Vary each dimension to get neighbor coordinates
         const adjacentCoordinates = [];
+        
+        // TODO: This is understandable, but there's probably a shorter way to do this using recursion.
         offsets.forEach(ix => {
             offsets.forEach(iy => {
                 offsets.forEach(iz => {
-                    const [dx, dy, dz] = [coordinate.x + ix, coordinate.y + iy, coordinate.z + iz];
-                    if (dx === coordinate.x && dy === coordinate.y && dz === coordinate.z) return;
-                    adjacentCoordinates.push(new Coordinate(dx, dy, dz));
+                    offsets.forEach(iw => {
+                        const [dx, dy, dz, dw] = [coordinate.x + ix, coordinate.y + iy, coordinate.z + iz, coordinate.w + iw];
+                        if (dx === coordinate.x && dy === coordinate.y && dz === coordinate.z && dw === coordinate.w) return;
+                        adjacentCoordinates.push(new Coordinate(dx, dy, dz, dw));
+                    });
                 });
             });
         });

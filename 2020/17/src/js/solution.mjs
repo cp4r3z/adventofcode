@@ -94,7 +94,4 @@ while (cycle <= 6) {
 const end = Date.now();
 console.log(`${end - start}ms TOTAL`);
 
-// End Process (gracefully)
-//process.exit(0); // TODO: Does this mess things up if it's a module?
-
 export { states, dimensionMinMax }; // TODO: As of now, this only runs after all cycles computed. Maybe use events to load dynamically?
