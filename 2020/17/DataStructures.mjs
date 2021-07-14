@@ -128,6 +128,10 @@ class Graph {
         // Return active state ?
     }
 
+    toValueArray(){
+        return [...this.Vertices].map(([key, value]) => value);
+    }
+
     // printGraph()
 }
 

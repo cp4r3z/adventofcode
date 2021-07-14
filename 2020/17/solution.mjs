@@ -33,38 +33,41 @@ arrInput.forEach((xArr, z) => {
 });
 
 const rule = function () {
-    console.log(this);
-    const cubeArray = [...this.Vertices].map(([key, value]) => value);
+    // Determine cubes to toggle based on the active neighbors
+    const cubesToToggle = [];
 
-    // TODO: A "toggle" logic might save space but be less understandable?
+    // TODO: Use async map of promises (maybe that will increase performance?)
 
-    const activeCubes = cubeArray.filter(v => v.Active);
-    const cubesToSetInactive = [];
-    activeCubes.forEach(v => {
-        const activeNeighbors = v.AdjacentVertices.filter(v => v.Active);
-        if (!(activeNeighbors.length === 2 || activeNeighbors.length === 3)) cubesToSetInactive.push(v);
+    this.toValueArray().forEach(cube => {
+        const activeNeighbors = cube.AdjacentVertices.filter(v => v.Active);
+        if (cube.Active) {
+            // If a cube is active and exactly 2 or 3 of its neighbors are also active,
+            // the cube remains active. Otherwise, the cube becomes inactive.
+            if (!(activeNeighbors.length === 2 || activeNeighbors.length === 3)) cubesToToggle.push(cube);
+        } else {
+            // If a cube is inactive but exactly 3 of its neighbors are active,
+            // the cube becomes active. Otherwise, the cube remains inactive.
+            if (activeNeighbors.length === 3) cubesToToggle.push(cube);
+        }
     });
 
-    const inactiveCubes = cubeArray.filter(v => !v.Active);
-    const cubesToSetActive = [];
-    inactiveCubes.forEach(v => {
-        const activeNeighbors = v.AdjacentVertices.filter(v => v.Active);
-        if (activeNeighbors.length === 3) cubesToSetActive.push(v);
-    });
-
-    cubesToSetInactive.forEach(v => this.setVertexActiveState(v, false));  //TODO: Test
-    cubesToSetActive.forEach(v => this.setVertexActiveState(v, true));  //TODO: Test
+    // Now toggle the active state of the determined cubes
+    cubesToToggle.forEach(cube => this.setVertexActiveState(cube, !cube.Active));
 };
 
+const start = Date.now();
 let cycle = 0;
 while (cycle <= 6) {
+    const startCycle = Date.now();
     const numberActiveCubes = pocketDimension.getActiveVertexCount();
     console.log(`Cycle: ${cycle}: Active: ${numberActiveCubes}`);
     pocketDimension.runRule(rule); // TODO: This is run an extra cycle!
     cycle++;
+    const endCycle = Date.now();
+    console.log(`${endCycle - startCycle}ms | ${Math.round(1000 / (endCycle - startCycle))}FPS ... FYI, 60 FPS is 16.6 ms`);
 }
-
-const numberActiveCubes = pocketDimension.getActiveVertexCount();
+const end = Date.now();
+console.log(`${end - start}ms TOTAL`);
 
 // End Process (gracefully)
 process.exit(0); // TODO: Does this mess things up if it's a module?
