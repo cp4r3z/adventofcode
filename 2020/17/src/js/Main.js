@@ -7,7 +7,9 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.130.1';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.130.1/examples/jsm/controls/OrbitControls.js';
 
-import { states as States } from './solution.mjs'; // BROKEN, need to restructure project
+// TODO: All states are calculated on load. Consider a more dynamic approach using events
+
+import { states as States, dimensionMinMax as MinMax } from './solution.mjs';
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -46,17 +48,18 @@ animate();
 
 let fps = 1;
 
-let pass = 0;
+let cycle = 0;
 
-let run = true; // maybe use something like this for start and stop
+let run = true; // TODO: maybe use something like this for start and stop ?
 
-function makePass() {
-	console.log(pass);
-	console.log(States[pass]); // Solution states
-	if (pass < 6) setTimeout(makePass, 1000 / fps);
-	pass++;
+function doCycle() {
+	console.log(cycle);
+	console.log(States[cycle]); // Solution states
+	console.log(MinMax[cycle]); // TODO: Might not need this if we use bounding box
+	if (cycle < 6) setTimeout(doCycle, 1000 / fps);
+	cycle++;
 }
-makePass();
+doCycle();
 
 const fpsSlider = document.getElementById("fps-slider");
 fpsSlider.oninput = function () {

@@ -79,6 +79,10 @@ class Graph {
             });
     }
 
+    getGraphExtents(){
+        return {min:this.Min, max:this.Max};
+    }
+
     addVertex(coordinate, active = false) {
         let vertex = this.getVertex(coordinate);
         if (!vertex) {
