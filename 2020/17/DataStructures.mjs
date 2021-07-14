@@ -56,6 +56,13 @@ class Graph {
         return this.Vertices.get(coordinate.toKey());
     }
 
+    getActiveVertexCount() {
+        return [...this.Vertices]
+            .map(([key, value]) => value)
+            .filter(v => v.Active)
+            .length;
+    }
+
     addVertex(coordinate, active = false) {
         let vertex = this.getVertex(coordinate);
         if (!vertex) {

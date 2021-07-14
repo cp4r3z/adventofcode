@@ -7,7 +7,7 @@ import { multiLine } from '../../common/parser.mjs'; // TODO: Does this work on 
 import * as DataStructures from './DataStructures.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url); // TODO: Is there a way to do this from GitHub? Otherwise, hardcode input.
+const inputFilePath = new URL('./input.txt', import.meta.url); // TODO: Is there a way to do this from GitHub? Otherwise, hardcode input.
 const arrInput = multiLine.toArrayofStrArrays(inputFilePath);
 
 /**
@@ -32,31 +32,39 @@ arrInput.forEach((xArr, z) => {
     });
 });
 
-const rule = function(){
+const rule = function () {
     console.log(this);
-    const cubeArray = [...this.Vertices].map(([key, value]) => value );
-    
+    const cubeArray = [...this.Vertices].map(([key, value]) => value);
+
     // TODO: A "toggle" logic might save space but be less understandable?
 
-    const activeCubes = cubeArray.filter(v=>v.Active);
+    const activeCubes = cubeArray.filter(v => v.Active);
     const cubesToSetInactive = [];
-    activeCubes.forEach(v=>{
-        const activeNeighbors = v.AdjacentVertices.filter(v=>v.Active);
-        if (!activeNeighbors.length===2 && !activeNeighbors.length===3) cubesToSetInactive.push(v);
+    activeCubes.forEach(v => {
+        const activeNeighbors = v.AdjacentVertices.filter(v => v.Active);
+        if (!(activeNeighbors.length === 2 || activeNeighbors.length === 3)) cubesToSetInactive.push(v);
     });
-    
-    const inactiveCubes = cubeArray.filter(v=>!v.Active);
+
+    const inactiveCubes = cubeArray.filter(v => !v.Active);
     const cubesToSetActive = [];
-    inactiveCubes.forEach(v=>{
-        const activeNeighbors = v.AdjacentVertices.filter(v=>v.Active);
+    inactiveCubes.forEach(v => {
+        const activeNeighbors = v.AdjacentVertices.filter(v => v.Active);
         if (activeNeighbors.length === 3) cubesToSetActive.push(v);
     });
 
-    cubesToSetInactive.forEach(v=>this.setVertexActiveState(v,false));  //TODO: Test
-    cubesToSetActive.forEach(v=>this.setVertexActiveState(v,true));  //TODO: Test
+    cubesToSetInactive.forEach(v => this.setVertexActiveState(v, false));  //TODO: Test
+    cubesToSetActive.forEach(v => this.setVertexActiveState(v, true));  //TODO: Test
 };
 
-pocketDimension.runRule(rule);
+let cycle = 0;
+while (cycle <= 6) {
+    const numberActiveCubes = pocketDimension.getActiveVertexCount();
+    console.log(`Cycle: ${cycle}: Active: ${numberActiveCubes}`);
+    pocketDimension.runRule(rule); // TODO: This is run an extra cycle!
+    cycle++;
+}
+
+const numberActiveCubes = pocketDimension.getActiveVertexCount();
 
 // End Process (gracefully)
 process.exit(0); // TODO: Does this mess things up if it's a module?
