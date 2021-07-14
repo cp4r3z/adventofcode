@@ -3,6 +3,7 @@
  */
 
 import * as DataStructures from './DataStructures.mjs';
+import { Coordinate } from './DataStructures.mjs';
 
 //import { multiLine } from '../../../../common/parser.mjs'; // TODO: Does this work on GitHub sites? It uses fs module which needs to be bundled. :-(
 
@@ -94,4 +95,30 @@ while (cycle <= 6) {
 const end = Date.now();
 console.log(`${end - start}ms TOTAL`);
 
-export { states, dimensionMinMax }; // TODO: As of now, this only runs after all cycles computed. Maybe use events to load dynamically?
+let activeMax = 0;
+const states3D = states.map(flattenState); // For Visualization, Flatten wth dimension into a sum of Active cubes
+
+function flattenState(state) {
+    const cubes3D = new Map();
+    state.forEach(cube4D => {
+        // generate flat coordinate
+        const coor3D = new Coordinate(cube4D.coordinate.x, cube4D.coordinate.y, cube4D.coordinate.z, 0);
+        let cube3D = cubes3D.get(coor3D.toKey());
+        if (!cube3D) {
+            cube3D = {
+                active: false,
+                activeCount: 0,
+                coordinate: coor3D
+            }
+            cubes3D.set(coor3D.toKey(), cube3D);
+        }
+        if (cube4D.active){
+            cube3D.active = true;
+            cube3D.activeCount++;
+        } 
+        if (cube3D.activeCount > activeMax) activeMax = cube3D.activeCount;
+    });
+    return cubes3D;
+}
+
+export { states, states3D, dimensionMinMax, activeMax }; // TODO: As of now, this only runs after all cycles computed. Maybe use events to load dynamically?

@@ -9,7 +9,7 @@ import { OrbitControls } from 'https://cdn.skypack.dev/three@0.130.1/examples/js
 
 // TODO: All states are calculated on load. Consider a more dynamic approach using events
 
-import { states as States, dimensionMinMax as MinMax } from './solution.mjs';
+import { states3D as States, activeMax as ActiveMax, dimensionMinMax as MinMax } from './solution.mjs';
 import { Coordinate } from './DataStructures.mjs';
 
 const scene = new THREE.Scene();
@@ -26,9 +26,7 @@ controls.touches = {
 };
 controls.enableDamping = true;
 
-const geometry = new THREE.BoxGeometry(.5, .5, .5);
-
-//scene.add(cube);
+const geometry = new THREE.BoxGeometry();
 
 camera.position.z = 5;
 //controls.update() must be called after any manual changes to the camera's transform
@@ -51,8 +49,6 @@ const materialInactive = new THREE.MeshBasicMaterial({ color: 0x00ff00, transpar
 class CubeMap {
 	constructor() {
 		this.Cubes = new Map();
-		// this.Min = new Coordinate();
-		// this.Max = new Coordinate();
 	}
 
 	getCube(coordinate) {
@@ -84,15 +80,20 @@ function doCycle() {
 	console.log(States[cycle]); // Solution states
 	console.log(MinMax[cycle]); // TODO: Might not need this if we use bounding box
 
-if (repeat && cycle ===7){
-	cubes.Cubes.forEach(cube => cube.material = materialInactive);
-	cycle = 0;
-}
+	if (repeat && cycle === 7) {
+		cubes.Cubes.forEach(cube => {
+			cube.material = materialInactive
+			cube.scale.set(0, 0, 0);
+		});
+		cycle = 0;
+	}
 
 	// Actually set the scene
 	States[cycle].forEach(cubeState => {
 		const cube = cubes.getCube(cubeState.coordinate);
 		cube.material = cubeState.active ? materialActive : materialInactive;
+		const activeScale = cubeState.activeCount / ActiveMax;
+		cube.scale.set(activeScale, activeScale, activeScale);
 	});
 
 	if (cycle < 7) setTimeout(doCycle, 1000 / fps);
