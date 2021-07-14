@@ -1,17 +1,23 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>CP4R3Z AOC Y2020D17</title>
-		<style>
-			body { margin: 0; }
-		</style>
-	</head>
-	<body>
-		<script type="module" src="js/Main.js"></script>
-		<button>Test</button>
-		<div class="slidecontainer">
-			<input type="range" min="1" max="30" value="1" class="slider" id="fps-slider">
-		</div>
-	</body>
+
+<head>
+	<meta charset="utf-8">
+	<title>CP4R3Z AOC Y2020D17</title>
+	<style>
+		body {
+			margin: 0;
+		}
+	</style>
+</head>
+
+<body>
+	<script type="module" src="js/Main.js"></script>
+	<div class="slide-container" style="width: 75%; margin-left: auto !important; margin-right: auto !important;">
+		<label for="fps-slider-name">Speed</label>
+		<input type="range" min="1" max="30" value="1" class="slider" id="fps-slider" name="fps-slider-name" style="width: 80%">
+	</div>
+	<div id="renderer-wrapper"></div>
+</body>
+
 </html>

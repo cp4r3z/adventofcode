@@ -16,8 +16,11 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer();
+const rendererWrapper = document.getElementById('renderer-wrapper');
+// TODO: https://stackoverflow.com/questions/29884485/threejs-canvas-size-based-on-container
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+
+rendererWrapper.appendChild(renderer.domElement);
 
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.touches = {
@@ -28,7 +31,13 @@ controls.enableDamping = true;
 
 const geometry = new THREE.BoxGeometry();
 
-camera.position.z = 5;
+const finalMinMax = MinMax[MinMax.length - 1];
+const midX = (finalMinMax.max.x + finalMinMax.min.x) / 2;
+const midZ = (finalMinMax.max.z + finalMinMax.min.z) / 2;
+
+controls.object.position.set(midX, finalMinMax.max.y * 2.5, midZ); //TODO: Use a bounding sphere or something instead of *2.5
+controls.target = new THREE.Vector3(midX, 0, midZ);
+//camera.lookAt(new THREE.Vector3(midX, 0, midZ)); // OrbitControls mess with this
 //controls.update() must be called after any manual changes to the camera's transform
 controls.update();
 
