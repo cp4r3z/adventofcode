@@ -69,6 +69,16 @@ class Graph {
             .length;
     }
 
+    getVertexKeyAndState() {
+        return [...this.Vertices]
+            .map(([key, value]) => {
+                return {
+                    key,
+                    active: value.Active
+                };
+            });
+    }
+
     addVertex(coordinate, active = false) {
         let vertex = this.getVertex(coordinate);
         if (!vertex) {

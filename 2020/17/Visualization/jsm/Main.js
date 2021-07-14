@@ -1,7 +1,13 @@
+// TODO: Three code and solution code should be modules that are loaded by main.
+
+// TODO: Look into webpack/browserify to use events https://nodejs.org/dist/latest-v14.x/docs/api/events.html ?
+
 // Find the latest version by visiting https://cdn.skypack.dev/three.
 
 import * as THREE from 'https://cdn.skypack.dev/three@0.130.1';
 import { OrbitControls } from 'https://cdn.skypack.dev/three@0.130.1/examples/jsm/controls/OrbitControls.js';
+
+import {states as States} from '../../solution.mjs'; // BROKEN, need to restructure project
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -45,6 +51,7 @@ let pass = 0;
 let run = true; // maybe use something like this for start and stop
 
 function makePass() {
+	console.log(States[pass]); // Solution states
 	pass++;
 	console.log(pass);
 	setTimeout(makePass, 1000 / fps);

@@ -32,6 +32,9 @@ arrInput.forEach((xArr, z) => {
     });
 });
 
+// Record of the states for each cycle
+const states = [];
+
 const rule = function () {
     // Determine cubes to toggle based on the active neighbors
     const cubesToToggle = [];
@@ -60,8 +63,13 @@ const start = Date.now();
 let cycle = 0;
 while (cycle <= 6) {
     const startCycle = Date.now();
+    // Record the current state (an array of objects {key, active})
+    // TODO: Consider only recording changes to increase performance
+    states.push(pocketDimension.getVertexKeyAndState());
+    // Log the number of active cubes (for puzzle solution)
     const numberActiveCubes = pocketDimension.getActiveVertexCount();
     console.log(`Cycle: ${cycle}: Active: ${numberActiveCubes}`);
+    // Run the rule for this cycle
     pocketDimension.runRule(rule); // TODO: This is run an extra cycle!
     cycle++;
     const endCycle = Date.now();
@@ -71,4 +79,6 @@ const end = Date.now();
 console.log(`${end - start}ms TOTAL`);
 
 // End Process (gracefully)
-process.exit(0); // TODO: Does this mess things up if it's a module?
+//process.exit(0); // TODO: Does this mess things up if it's a module?
+
+export { states }; // TODO: As of now, this only runs after all cycles computed. Maybe use events to load dynamically?
