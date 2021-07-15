@@ -9,21 +9,44 @@ const inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 let tinput = '1 + 2 * 3 + 4 * 5 + 6';
-//tinput = tinput.replace(/\s/g,'');
-const arrTinput = tinput.split(' ');
 
-const test = math(arrTinput);
+const test = math(tinput);
+console.log(test);
+
+const part1 = arrInput.reduce((acc, cur) => { return acc + math(cur); }, 0);
+console.log(`Year 2020 Day 18 Part 1 Solution: ${part1}`);
 
 function math(str) {
-    // find parens    
-    
-    
-    // if cannot find paren, return result, otherwise, do math on the paren
-    return evalExpression(strNoParens);
+    // strip off leading parens
+    str =sliceExtraOuterParens(str);
+
+    // Regular Expression for finding all parenthetical expressions
+    const re = /\(([^\(\)]*)\)/g;
+
+    const newStr = str.replace(re, math); // <== Recursion
+    if (newStr === str) return evalExpression(str);
+    return math(newStr); // <== Recursion again?
 }
 
-function evalExpression(str){
-    const arr  = str.split(' ');
+function sliceExtraOuterParens(str){
+    const parensFrontAndBack = str.charAt(0) === '(' && str.charAt(str.length - 1) === ')';
+    if (!parensFrontAndBack) return str;
+    const newStr = str.slice(1, -1);
+    let open = 0; // Because of first paren
+
+    for (let i = 0; i < newStr.length; i++) {
+        if (newStr[i] === "(") open++;
+        else if (newStr[i] === ")") open--;
+        if (open<0){
+            return str;
+        }
+    }
+    if (open===0) return newStr;
+    throw "something bad happened";
+}
+
+function evalExpression(str) {
+    const arr = str.split(' ');
     let result = parseInt(arr[0]);
     let mode;
     for (let i = 1; i < arr.length; i++) {
