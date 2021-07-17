@@ -4,63 +4,16 @@
 
 import { multiLine } from '../../common/parser.mjs';
 
+import Tile from './Tile.mjs';
+
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 
 const arrInput = multiLine.toStrArray(inputFilePath);
 
-class Tile {
-
-//enum
-
-/**
- * flip state (0=original, 1 flipped horizontal, 2 flipped vertical, 3 flipped both)
- * 
- * 0  1
- * 12 21
- * 34 43
- * 
- * 2  3
- * 34 43
- * 12 21
- */
-
-/**
- * rotation state
- * 
- * 0  1
- * 12 31
- * 34 42
- * 
- * 2  3
- * 43 24
- * 21 13
- */
-
-    // content is a size 10 array of strings. we can split it up on construction
-    constructor(id, content) {
-        this.Id = parseInt(id);
-        this.Content = content.map(line => line.split(''));
-
-        // TRBL order: Top, Right, Bottom, Left
-        const edgeT = content[0];
-        let edgeR = '';
-        const edgeB = content[9];
-        let edgeL = '';
-
-        for (let i = 0; i < 10; i++) {
-            edgeR += this.Content[i][9];
-            edgeL += this.Content[9 - i][0];
-        }
-        this.edges = [edgeT, edgeR, edgeB, edgeL];
-    }
-
-    //getRow by id?
-
-}
-
 let tiles = []; // Array of Tile objects
 
+// Process the input line by line to generate Tiles
 let tempTileIdString;
 let tempTileContent = [];
 arrInput.forEach(line => {
@@ -81,4 +34,32 @@ arrInput.forEach(line => {
 
 // Important hint: the outermost edges won't line up with any other tiles
 
+for (let i = 0; i < tiles.length; i++) {
+    const tile = tiles[i];
+    let uniqueEdgeCount = 0;
+
+    for (let edgeI = 0; edgeI < tile.PossibleEdges.length; edgeI++) {
+        const edge = tile.PossibleEdges[edgeI];
+        let isUnique = true;
+        for (let j = 0; j < tiles.length; j++) {
+            if (j == i) continue;
+            const otherTile = tiles[j];
+            if (otherTile.PossibleEdges.includes(edge)) {
+                isUnique = false;
+                break;
+            }
+        }
+        if (isUnique) uniqueEdgeCount++;
+    }
+    tile.UniqueEdgeCount = uniqueEdgeCount / 2; // kind of a hack i guess 
+}
+
 console.log('hi charles');
+
+let product = 1;
+
+tiles.forEach(tile => {
+    if (tile.UniqueEdgeCount === 2) product *= tile.Id;
+});
+
+console.log('Part 1 Solution is ' + product);
