@@ -1,11 +1,4 @@
 export default class Tile {
-
-    //enum
-
-
-
-
-
     // content is a size 10 array of strings. we can split it up on construction
     constructor(id, content) {
         this.Id = parseInt(id);
