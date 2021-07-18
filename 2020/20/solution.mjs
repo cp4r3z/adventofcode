@@ -65,9 +65,9 @@ tiles.forEach(tile => {
 
 console.log('Part 1 Solution is ' + product);
 
-tiles[0].printContent();
-tiles[0].setState({ Flip: 3, Rotation: 0 });
-tiles[0].setState({ Flip: 3, Rotation: 1 });
+// tiles[0].printContent();
+// tiles[0].setState({ Flip: 3, Rotation: 0 });
+// tiles[0].setState({ Flip: 3, Rotation: 1 });
 
 // Build a puzzle using Places that contain Tiles (tiles will swap/change as puzzle is solved)
 
@@ -83,5 +83,16 @@ const puzzle = new Puzzle(puzzleDim);
  * if valid, contiue placing placement(tileState) - remember that only "edge" tiles can go in edges, "corners" can only go in corners
  * if all tiles are placed (and valid) return true?
  */
+
+const testValid = puzzle.isValid();
+
+const placeIds = [...puzzle.keys()];
+let puzzleDepth = 0; //index of currently evaluated puzzle place id
+const possibleFlips = [0, 1, 2, 3];
+const possibleRotations = [0, 1, 2, 3];
+
+function place(nextState) {
+
+}
 
 console.log('hi charles');

@@ -48,4 +48,30 @@ export default class Puzzle extends Map {
         }
 
     }
+
+    isValid() {
+        // const arr = Array.from(this, ([id, place]) => place);
+        // const arr = this.values();
+        return [...this.values()].every(place => {
+            let valid = true;
+
+            if (valid && place.Tile && place.PlaceT && place.PlaceT.Tile) {
+                valid = place.PlaceT.Tile.EdgeB === place.Tile.EdgeT;
+            }
+
+            if (valid && place.Tile && place.PlaceR && place.PlaceR.Tile) {
+                valid = place.PlaceR.Tile.EdgeL === place.Tile.EdgeR;
+            }
+
+            if (valid && place.Tile && place.PlaceB && place.PlaceB.Tile) {
+                valid = place.PlaceB.Tile.EdgeT === place.Tile.EdgeB;
+            }
+
+            if (valid && place.Tile && place.PlaceL && place.PlaceL.Tile) {
+                valid = place.PlaceL.Tile.EdgeR === place.Tile.EdgeL;
+            }
+
+            return valid;
+        });
+    }
 }
