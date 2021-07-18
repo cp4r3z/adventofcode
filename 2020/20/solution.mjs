@@ -7,7 +7,7 @@ import { multiLine } from '../../common/parser.mjs';
 import Tile from './Tile.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./tinput.txt', import.meta.url);
 
 const arrInput = multiLine.toStrArray(inputFilePath);
 
@@ -63,6 +63,7 @@ tiles.forEach(tile => {
 });
 
 tiles[0].printContent();
-tiles[0].setState({ Flip: 1, Rotation: 0 })
+tiles[0].setState({ Flip: 3, Rotation: 0 });
+tiles[0].setState({ Flip: 3, Rotation: 1 });
 
 console.log('Part 1 Solution is ' + product);

@@ -2,29 +2,9 @@ export default class Tile {
 
     //enum
 
-    /**
-     * flip state (0=original, 1 flipped horizontal, 2 flipped vertical, 3 flipped both)
-     * 
-     * 0  1
-     * 12 21
-     * 34 43
-     * 
-     * 2  3
-     * 34 43
-     * 12 21
-     */
 
-    /**
-     * rotation state
-     * 
-     * 0  1
-     * 12 31
-     * 34 42
-     * 
-     * 2  3
-     * 43 24
-     * 21 13
-     */
+
+
 
     // content is a size 10 array of strings. we can split it up on construction
     constructor(id, content) {
@@ -99,49 +79,123 @@ export default class Tile {
 
         const storedStateContent = this.StateContentMap.get(this.createStateKey(newState));
         if (storedStateContent) {
-            console.log('known content');
+            // Load stored content
             this.Content = storedStateContent.Content;
             this.Edges = storedStateContent.Edges;
         } else {
-            // new state
+            // Determine new content
+            // Reset the content to original state if changes are being made
+            if (state.Rotation > 0 || state.Flip > 0) {
+                this.Content = this.StateContentMap.get(this.createStateKey()).Content;
+            }
 
-            // do rotation
-            // do flips
-            // store 
-            flipH.call(this); // Changes this.Content
+            this._doRotation(state);
+            this._doFlips(state);
+
+            // update edges
             this.Edges = this.getEdgesFromContent(this.Content);
-            this.printContent();
+
+            // store content
+            //this.printContent();
             this.StateContentMap.set(this.createStateKey(this.State), {
                 Edges: this.Edges,
                 Content: this.Content
             });
-
         }
+    }
 
-        function flipH() {
-            let newContent = [];
-            const originalContent = this.StateContentMap.get(this.createStateKey()).Content;
-            for (let i = 0; i < originalContent.length; i++) {
-                const row = originalContent[i];
-                let newRow = [];
-                for (let j = 0; j < row.length; j++) {
-                    const item = row[row.length - 1 - j]; // Start from end of row, move back
-                    newRow.push(item);
-                }
-                newContent.push(newRow);
+    _doRotation(state) {
+        /**
+         * rotation state
+         * 
+         * 0  1
+         * 12 31
+         * 34 42
+         * 
+         * 2  3
+         * 43 24
+         * 21 13
+         */
+
+        for (let x = 0; x < state.Rotation; x++) {
+            // TODO: Maybe the individual rotations could be stored? Remember flips haven't been performed yet.
+            this._rotate90cw();
+        }
+    }
+
+    _rotate90cw() {
+        let newContent = new Array(10).fill(0).map(() => new Array(10));
+        for (let i = 0; i < 10; i++) {
+            for (let j = 0; j < 10; j++) {
+                const item = this.Content[i][j];
+                newContent[j][9 - i] = item;
             }
+        }
+        this.Content = newContent;
+    }
 
-            this.Content = newContent;
+    _doFlips(state) {
+        /**
+         * flip state (0=original, 1 flipped horizontal, 2 flipped vertical, 3 flipped both)
+         * 
+         * 0  1
+         * 12 21
+         * 34 43
+         * 
+         * 2  3
+         * 34 43
+         * 12 21
+         */
+
+        switch (state.Flip) {
+            case 1:
+                this._flipH();
+                break;
+            case 2:
+                this._flipV();
+                break;
+            case 3:
+                this._flipH();
+                this._flipV();
+                break;
+            default:
+                break;
+        }
+    }
+
+    // Note: In Node 14, we can use private prefix # 
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields#browser_compatibility
+    _flipH() {
+        let newContent = [];
+        for (let i = 0; i < this.Content.length; i++) {
+            const row = this.Content[i];
+            let newRow = [];
+            for (let j = 0; j < row.length; j++) {
+                const item = row[row.length - 1 - j]; // Start from end of row, move back
+                newRow.push(item);
+            }
+            newContent.push(newRow);
         }
 
+        this.Content = newContent;
+    }
+
+    _flipV() {
+        let newContent = [];
+        for (let i = this.Content.length - 1; i >= 0; i--) {
+            const row = this.Content[i]; // Start from last row and push it
+            newContent.push(row);
+        }
+
+        this.Content = newContent;
     }
 
     //getRow by id?
     printContent() {
+        console.log('');
         for (let i = 0; i < this.Content.length; i++) {
             const row = this.Content[i];
             console.log(row.join(''));
         }
     }
-
 }
