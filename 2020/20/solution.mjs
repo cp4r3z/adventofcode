@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 import Tile from './Tile.mjs';
-import Place from './Place.mjs';
+import Puzzle from './Puzzle.mjs';
 
 // Parse Input
 const inputFilePath = new URL('./tinput.txt', import.meta.url);
@@ -69,30 +69,8 @@ tiles[0].setState({ Flip: 3, Rotation: 1 });
 
 // Build a puzzle using Places that contain Tiles (tiles will swap/change as puzzle is solved)
 
-const puzzle = new Map(); // TODO: Consider making puzzle a class
-
 const puzzleDim = Math.sqrt(tiles.length);
 
-for (let y = 0; y < puzzleDim; y++) {
-    for (let x = 0; x < puzzleDim; x++) {
-        const p = new Place(x, y);
-        if (x === 0 || y === 0 || x === puzzleDim - 1 || y === puzzleDim - 1) {
-            // Mark place as edge
-            p.IsEdge = true;
-        }
-        if (x === 0 && y === 0 ||
-            x === 0 && y === puzzleDim - 1 ||
-            x === puzzleDim - 1 && y === 0 ||
-            x === puzzleDim - 1 && y === puzzleDim - 1
-        ) {
-            // Mark place as corner
-            p.IsEdge = false;
-            p.IsCorner = true;
-        }
-        puzzle.set(p.Id,p);
-    }
-}
-
-
+const puzzle = new Puzzle(puzzleDim);
 
 console.log('hi charles');
