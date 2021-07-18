@@ -61,6 +61,8 @@ tiles.forEach(tile => {
     if (tile.UniqueEdgeCount === 2) product *= tile.Id;
 });
 
+// TODO: Remember PossibleAdjacentTiles and IsEdge, IsCorner
+
 console.log('Part 1 Solution is ' + product);
 
 tiles[0].printContent();
@@ -72,5 +74,14 @@ tiles[0].setState({ Flip: 3, Rotation: 1 });
 const puzzleDim = Math.sqrt(tiles.length);
 
 const puzzle = new Puzzle(puzzleDim);
+
+/**
+ * so, start by placing a tile in a place
+ * check to see that the known edges all agree
+ *   - for each place, all tile edges should be equal
+ * if false, change tile (rotate/flip). if all possible combinations are evaluated, remove the tile and return false?
+ * if valid, contiue placing placement(tileState) - remember that only "edge" tiles can go in edges, "corners" can only go in corners
+ * if all tiles are placed (and valid) return true?
+ */
 
 console.log('hi charles');
