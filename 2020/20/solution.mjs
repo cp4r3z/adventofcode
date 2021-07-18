@@ -62,4 +62,7 @@ tiles.forEach(tile => {
     if (tile.UniqueEdgeCount === 2) product *= tile.Id;
 });
 
+tiles[0].printContent();
+tiles[0].setState({ Flip: 1, Rotation: 0 })
+
 console.log('Part 1 Solution is ' + product);
