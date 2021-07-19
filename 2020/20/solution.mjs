@@ -71,9 +71,7 @@ console.log('Part 1 Solution is ' + product);
 
 // Build a puzzle using Places that contain Tiles (tiles will swap/change as puzzle is solved)
 
-const puzzleDim = Math.sqrt(tiles.length);
-
-const puzzle = new Puzzle(puzzleDim);
+const puzzle = new Puzzle(tiles);
 
 /**
  * so, start by placing a tile in a place
@@ -84,15 +82,41 @@ const puzzle = new Puzzle(puzzleDim);
  * if all tiles are placed (and valid) return true?
  */
 
-const testValid = puzzle.isValid();
+//const testValid = puzzle.isValid();
 
 const placeIds = [...puzzle.keys()];
 let puzzleDepth = 0; //index of currently evaluated puzzle place id
 const possibleFlips = [0, 1, 2, 3];
 const possibleRotations = [0, 1, 2, 3];
 
-function place(nextState) {
+placement();
 
+function placement() {
+    const place = puzzle.get(placeIds[puzzleDepth]);
+    const unplacedTileIds = puzzle.getUnplacedTileIds();
+    if (unplacedTileIds.length === 0) {
+        console.log('solved!');
+    }
+    unplacedTileIds.forEach(tileId => {
+        //place.Tile = puzzle.Tiles.get(tileId); // TODO: Make Tiles a map.
+        place.Tile = puzzle.Tiles.find(tile => tile.Id === tileId);
+        possibleFlips.forEach(Flip => {
+            possibleRotations.forEach(Rotation => {
+                place.Tile.setState({ Flip, Rotation });
+                if (puzzle.isValid()) {
+                    //if keep going, increment puzzledepth
+                    puzzleDepth++;
+                    console.log(puzzleDepth);
+                    if (puzzleDepth > placeIds.length - 1) {
+                        console.log('solved???');
+                    }
+                    placement();
+                }
+            });
+        });
+        // OK, if we're here, remove the tile
+        place.Tile = null;
+    });
 }
 
 console.log('hi charles');

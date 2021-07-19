@@ -9,20 +9,22 @@ import Place from './Place.mjs';
  */
 
 export default class Puzzle extends Map {
-    constructor(puzzleDim) {
+    constructor(tiles) {
         super();
-        this.PuzzleDim = puzzleDim; // This is not an index!
-        for (let y = 0; y < puzzleDim; y++) {
-            for (let x = 0; x < puzzleDim; x++) {
+        this.Tiles = tiles;
+        this.PuzzleDim = Math.sqrt(tiles.length); // This is not an index!
+        const puzzleDimIndex = this.PuzzleDim - 1;
+        for (let y = 0; y <= puzzleDimIndex; y++) {
+            for (let x = 0; x <= puzzleDimIndex; x++) {
                 const p = new Place(x, y);
-                if (x === 0 || y === 0 || x === puzzleDim - 1 || y === puzzleDim - 1) {
+                if (x === 0 || y === 0 || x === puzzleDimIndex || y === puzzleDimIndex) {
                     // Mark place as edge
                     p.IsEdge = true;
                 }
                 if (x === 0 && y === 0 ||
-                    x === 0 && y === puzzleDim - 1 ||
-                    x === puzzleDim - 1 && y === 0 ||
-                    x === puzzleDim - 1 && y === puzzleDim - 1
+                    x === 0 && y === puzzleDimIndex ||
+                    x === puzzleDimIndex && y === 0 ||
+                    x === puzzleDimIndex && y === puzzleDimIndex
                 ) {
                     // Mark place as corner
                     p.IsEdge = false;
@@ -33,11 +35,11 @@ export default class Puzzle extends Map {
         }
 
         // And now loop through again to assign neighbors
-        for (let y = 0; y < puzzleDim; y++) {
-            for (let x = 0; x < puzzleDim; x++) {
+        for (let y = 0; y <= puzzleDimIndex; y++) {
+            for (let x = 0; x <= puzzleDimIndex; x++) {
                 let assignT = y !== 0;
-                let assignR = x !== this.PuzzleDim - 1;
-                let assignB = y !== this.PuzzleDim - 1;
+                let assignR = x !== puzzleDimIndex;
+                let assignB = y !== puzzleDimIndex;
                 let assignL = x !== 0;
 
                 if (assignT) this.get(`x${x}y${y}`).PlaceT = this.get(`x${x}y${y - 1}`);
@@ -46,32 +48,46 @@ export default class Puzzle extends Map {
                 if (assignL) this.get(`x${x}y${y}`).PlaceL = this.get(`x${x - 1}y${y}`);
             }
         }
-
     }
 
     isValid() {
-        // const arr = Array.from(this, ([id, place]) => place);
-        // const arr = this.values();
         return [...this.values()].every(place => {
-            let valid = true;
+            if (!place.Tile) return true;
 
-            if (valid && place.Tile && place.PlaceT && place.PlaceT.Tile) {
-                valid = place.PlaceT.Tile.EdgeB === place.Tile.EdgeT;
+            // for debugging
+            const tile = place.Tile;
+            const TileT = place.PlaceT && place.PlaceT.Tile;
+            const TileR = place.PlaceR && place.PlaceR.Tile;
+            const TileB = place.PlaceB && place.PlaceB.Tile;
+            const TileL = place.PlaceL && place.PlaceL.Tile;
+
+            if (place.PlaceT && place.PlaceT.Tile) {
+                if (place.PlaceT.Tile.Edges.B !== place.Tile.Edges.T) return false;
             }
 
-            if (valid && place.Tile && place.PlaceR && place.PlaceR.Tile) {
-                valid = place.PlaceR.Tile.EdgeL === place.Tile.EdgeR;
+            if (place.PlaceR && place.PlaceR.Tile) {
+                if (place.PlaceR.Tile.Edges.L !== place.Tile.Edges.R) return false;
             }
 
-            if (valid && place.Tile && place.PlaceB && place.PlaceB.Tile) {
-                valid = place.PlaceB.Tile.EdgeT === place.Tile.EdgeB;
+            if (place.PlaceB && place.PlaceB.Tile) {
+                if (place.PlaceB.Tile.Edges.T !== place.Tile.Edges.B) return false;
             }
 
-            if (valid && place.Tile && place.PlaceL && place.PlaceL.Tile) {
-                valid = place.PlaceL.Tile.EdgeR === place.Tile.EdgeL;
+            if (place.PlaceL && place.PlaceL.Tile) {
+                if (place.PlaceL.Tile.Edges.R !== place.Tile.Edges.L) return false;
             }
 
-            return valid;
+            return true;
         });
     }
+
+    getUnplacedTileIds() {
+        const placedTileIds = [...this.values()]
+            .map(place => place.Tile && place.Tile.Id)
+            .filter(id => id);
+        return this.Tiles
+            .map(tile => tile.Id)
+            .filter(id => !placedTileIds.includes(id));
+    }
+
 }

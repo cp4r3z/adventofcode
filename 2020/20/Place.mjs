@@ -6,7 +6,7 @@ export default class Place {
 
         this.IsEdge = false; // only known by puzzle
         this.IsCorner = false;
-        this.Tile = null; //Tile object
+        this.Tile = null ; //Tile object
         this.PlaceT = null; // ref to place to the top
         this.PlaceR = null;
         this.PlaceB = null;
