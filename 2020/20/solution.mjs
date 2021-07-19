@@ -8,7 +8,7 @@ import Tile from './Tile.mjs';
 import Puzzle from './Puzzle.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 
 const arrInput = multiLine.toStrArray(inputFilePath);
 
@@ -105,6 +105,8 @@ function placement(depth) {
     unplacedTileIds.forEach(tileId => {
         if (solutionFound) return;
         //place.Tile = puzzle.Tiles.get(tileId); // TODO: Make Tiles a map.
+
+        // TODO: This isn't at all efficient. We need to know which tiles can actually belong in place based on surrounding tiles
         place.Tile = puzzle.Tiles.find(tile => tile.Id === tileId);
         possibleFlips.forEach(Flip => {
             if (solutionFound) return;
