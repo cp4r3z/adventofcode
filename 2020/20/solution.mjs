@@ -8,7 +8,7 @@ import Tile from './Tile.mjs';
 import Puzzle from './Puzzle.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./tinput.txt', import.meta.url);
 
 const arrInput = multiLine.toStrArray(inputFilePath);
 
@@ -31,8 +31,6 @@ arrInput.forEach(line => {
     }
 });
 
-// Figure out first how "unique" the sides are. Maybe this is easier than you'd expect?
-
 // Important hint: the outermost edges won't line up with any other tiles
 
 for (let i = 0; i < tiles.length; i++) {
@@ -47,7 +45,9 @@ for (let i = 0; i < tiles.length; i++) {
             const otherTile = tiles[j];
             if (otherTile.PossibleEdges.includes(edge)) {
                 isUnique = false;
-                break;
+                //break; // TODO: Maybe keep going to get all adjacents.
+                tile.PotentialAdjacentTiles.add(otherTile);
+                otherTile.PotentialAdjacentTiles.add(tile);
             }
         }
         if (isUnique) uniqueEdgeCount++;
@@ -61,13 +61,24 @@ tiles.forEach(tile => {
     if (tile.UniqueEdgeCount === 2) product *= tile.Id;
 });
 
-// TODO: Remember PossibleAdjacentTiles and IsEdge, IsCorner
+// Remember PossibleAdjacentTiles and IsEdge, IsCorner
+
+let nEdges = 0;
+let nCorners = 0;
+tiles.forEach(tile => {
+    if (tile.UniqueEdgeCount === 2) {
+        nCorners++;
+        tile.IsCorner = true;
+    }
+    else if (tile.UniqueEdgeCount === 1) {
+        nEdges++;
+        tile.IsEdge = true;
+    }
+});
+
+console.log(`${nCorners} corners\n${nEdges} edges`);
 
 console.log('Part 1 Solution is ' + product);
-
-// tiles[0].printContent();
-// tiles[0].setState({ Flip: 3, Rotation: 0 });
-// tiles[0].setState({ Flip: 3, Rotation: 1 });
 
 // Build a puzzle using Places that contain Tiles (tiles will swap/change as puzzle is solved)
 
@@ -93,42 +104,47 @@ let solutionFound = false;
 
 placement(0);
 
+// Do a DFS (depth first search) for a placement solution for the tiles
+// "depth" here is simply the index of the place being evaluated in this level of recursion
 function placement(depth) {
     if (solutionFound) return;
     const puzzleDepth = depth;
     const place = puzzle.get(placeIds[puzzleDepth]);
     const unplacedTileIds = puzzle.getUnplacedTileIds();
-    // if (unplacedTileIds.length === 0) {
-    //     console.log('solved!');
-    //     return;
-    // }
+
     unplacedTileIds.forEach(tileId => {
         if (solutionFound) return;
         //place.Tile = puzzle.Tiles.get(tileId); // TODO: Make Tiles a map.
+        const tile = puzzle.Tiles.find(tile => tile.Id === tileId);
 
-        // TODO: This isn't at all efficient. We need to know which tiles can actually belong in place based on surrounding tiles
-        place.Tile = puzzle.Tiles.find(tile => tile.Id === tileId);
+        // TODO: This isn't at ALL efficient. We need to know which tiles can actually belong in place based on surrounding tiles
+        // so, for all surrounding places, if they have tiles, find a potential neighbor tile that they can all have.
+        
+        // If the PLACE is a corner, only place a corner. etc...
+        if (place.IsCorner && !tile.IsCorner) return;
+        if (place.IsEdge && !tile.IsEdge) return;
+
+        place.Tile = tile;
         possibleFlips.forEach(Flip => {
             if (solutionFound) return;
             possibleRotations.forEach(Rotation => {
                 if (solutionFound) return;
                 place.Tile.setState({ Flip, Rotation });
                 if (puzzle.isValid()) {
-                    
+
                     const unplacedTileIds = puzzle.getUnplacedTileIds();
                     if (unplacedTileIds.length === 0) {
                         console.log('solved!');
                         solutionFound = true; // TODO: Find a better way to break out of all these loops.
+                        //puzzle.storeSolution();
                         return;
                     }
-                    
-                    //if keep going, increment puzzledepth
-                    
+
                     console.log(puzzleDepth);
                     if (puzzleDepth > placeIds.length - 1) {
                         console.log('solved???');
                     }
-                    placement(puzzleDepth+1);
+                    placement(puzzleDepth + 1); //if keep going, increment puzzledepth
                 }
             });
         });
@@ -136,5 +152,8 @@ function placement(depth) {
         if (!solutionFound) place.Tile = null;
     });
 }
+
+console.log('\n');
+puzzle.storeSolution();
 
 console.log('hi charles');

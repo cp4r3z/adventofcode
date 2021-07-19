@@ -28,6 +28,10 @@ export default class Tile {
             Edges: this.Edges,
             Content: this.Content
         });
+
+        this.PotentialAdjacentTiles = new Set();
+        this.IsEdge = false; // or this could be derived from "UniqueEdgeCount"
+        this.IsCorner = false; // or this could be derived from "UniqueEdgeCount"
     }
 
     createStateKey(state = { Flip: 0, Rotation: 0 }) {

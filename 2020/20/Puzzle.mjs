@@ -14,6 +14,7 @@ export default class Puzzle extends Map {
         this.Tiles = tiles;
         this.PuzzleDim = Math.sqrt(tiles.length); // This is not an index!
         const puzzleDimIndex = this.PuzzleDim - 1;
+        this.Solution = new Array(this.PuzzleDim * 9 + 1).fill(0).map(() => new Array(this.PuzzleDim * 9 + 1)); // account for overlaps
         for (let y = 0; y <= puzzleDimIndex; y++) {
             for (let x = 0; x <= puzzleDimIndex; x++) {
                 const p = new Place(x, y);
@@ -90,4 +91,53 @@ export default class Puzzle extends Map {
             .filter(id => !placedTileIds.includes(id));
     }
 
+    // optional print and write file
+    storeSolution(print = true, write = true) {
+        const puzzleDimIndex = this.PuzzleDim - 1;
+
+        for (let py = 0; py <= puzzleDimIndex; py++) {
+            for (let px = 0; px <= puzzleDimIndex; px++) {
+                const placeId = `x${px}y${py}`;
+                const place = this.get(placeId);
+                const tile = place.Tile;
+                if (!tile) return console.error('No Solution');
+
+                // if it's a corner print 2 sides, if it's an edge, print 1 side
+                // if it's at x=0, print the whole row, otherwise cut off the LEFT part
+                // if it's at y=0, print the whole column, otherwise cut off the BOTTOM part
+
+                let startX = 1;
+                if (px === 0) startX = 0;
+                let startY = 1;
+                if (py === 0) startY = 0;
+
+                // calculate absolute position py -> y
+                // py = 0 then yoffset = 0
+                // py = 1 then yoffset = 10
+                // py = 2 then yoffset = 10 + (9 * (py-1))
+
+                let offsetX = 9 * px + 1;
+                if (px === 0) offsetX = 0;
+                let offsetY = 9 * py + 1;
+                if (py === 0) offsetY = 0;
+
+                for (let y = startY; y <= 9; y++) {
+                    for (let x = startX; x <= 9; x++) {
+                        this.Solution[y + offsetY - startY][x + offsetX - startX] = tile.Content[y][x]; // ew
+                    }
+                }
+
+            }
+        }
+
+        if (print || write) {
+            for (let y = 0; y < this.Solution.length; y++) {
+                const row = this.Solution[y].join('');
+                if (print) console.log(row);
+                if (write) {
+                    // TODO: write to file
+                }
+            }
+        }
+    }
 }
