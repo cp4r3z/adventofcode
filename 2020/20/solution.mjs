@@ -8,7 +8,7 @@ import Tile from './Tile.mjs';
 import Puzzle from './Puzzle.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 
 const arrInput = multiLine.toStrArray(inputFilePath);
 

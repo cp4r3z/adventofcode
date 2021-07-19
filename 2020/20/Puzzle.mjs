@@ -14,7 +14,8 @@ export default class Puzzle extends Map {
         this.Tiles = tiles;
         this.PuzzleDim = Math.sqrt(tiles.length); // This is not an index!
         const puzzleDimIndex = this.PuzzleDim - 1;
-        this.Solution = new Array(this.PuzzleDim * 9 + 1).fill(0).map(() => new Array(this.PuzzleDim * 9 + 1)); // account for overlaps
+        this._originalSolution = new Array(this.PuzzleDim * 8).fill(0).map(() => new Array(this.PuzzleDim * 8)); // 8 is a tile with borders removed
+        this.Solution = new Array(this.PuzzleDim * 8).fill(0).map(() => new Array(this.PuzzleDim * 8)); // 8 is a tile with borders removed
         for (let y = 0; y <= puzzleDimIndex; y++) {
             for (let x = 0; x <= puzzleDimIndex; x++) {
                 const p = new Place(x, y);
@@ -102,28 +103,10 @@ export default class Puzzle extends Map {
                 const tile = place.Tile;
                 if (!tile) return console.error('No Solution');
 
-                // if it's a corner print 2 sides, if it's an edge, print 1 side
-                // if it's at x=0, print the whole row, otherwise cut off the LEFT part
-                // if it's at y=0, print the whole column, otherwise cut off the BOTTOM part
-
-                let startX = 1;
-                if (px === 0) startX = 0;
-                let startY = 1;
-                if (py === 0) startY = 0;
-
-                // calculate absolute position py -> y
-                // py = 0 then yoffset = 0
-                // py = 1 then yoffset = 10
-                // py = 2 then yoffset = 10 + (9 * (py-1))
-
-                let offsetX = 9 * px + 1;
-                if (px === 0) offsetX = 0;
-                let offsetY = 9 * py + 1;
-                if (py === 0) offsetY = 0;
-
-                for (let y = startY; y <= 9; y++) {
-                    for (let x = startX; x <= 9; x++) {
-                        this.Solution[y + offsetY - startY][x + offsetX - startX] = tile.Content[y][x]; // ew
+                for (let y = 1; y <= 8; y++) {
+                    for (let x = 1; x <= 8; x++) {
+                        this.Solution[8 * py + y - 1][8 * px + x - 1] = tile.Content[y][x];
+                        this._originalSolution[8 * py + y - 1][8 * px + x - 1] = tile.Content[y][x];
                     }
                 }
 
@@ -140,4 +123,9 @@ export default class Puzzle extends Map {
             }
         }
     }
+
+    setSolutionState(state = { Flip: 0, Rotation: 0 }) {
+
+    }
+
 }
