@@ -85,37 +85,53 @@ const puzzle = new Puzzle(tiles);
 //const testValid = puzzle.isValid();
 
 const placeIds = [...puzzle.keys()];
-let puzzleDepth = 0; //index of currently evaluated puzzle place id
+//let puzzleDepth = 0; //index of currently evaluated puzzle place id
 const possibleFlips = [0, 1, 2, 3];
 const possibleRotations = [0, 1, 2, 3];
 
-placement();
+let solutionFound = false;
 
-function placement() {
+placement(0);
+
+function placement(depth) {
+    if (solutionFound) return;
+    const puzzleDepth = depth;
     const place = puzzle.get(placeIds[puzzleDepth]);
     const unplacedTileIds = puzzle.getUnplacedTileIds();
-    if (unplacedTileIds.length === 0) {
-        console.log('solved!');
-    }
+    // if (unplacedTileIds.length === 0) {
+    //     console.log('solved!');
+    //     return;
+    // }
     unplacedTileIds.forEach(tileId => {
+        if (solutionFound) return;
         //place.Tile = puzzle.Tiles.get(tileId); // TODO: Make Tiles a map.
         place.Tile = puzzle.Tiles.find(tile => tile.Id === tileId);
         possibleFlips.forEach(Flip => {
+            if (solutionFound) return;
             possibleRotations.forEach(Rotation => {
+                if (solutionFound) return;
                 place.Tile.setState({ Flip, Rotation });
                 if (puzzle.isValid()) {
+                    
+                    const unplacedTileIds = puzzle.getUnplacedTileIds();
+                    if (unplacedTileIds.length === 0) {
+                        console.log('solved!');
+                        solutionFound = true; // TODO: Find a better way to break out of all these loops.
+                        return;
+                    }
+                    
                     //if keep going, increment puzzledepth
-                    puzzleDepth++;
+                    
                     console.log(puzzleDepth);
                     if (puzzleDepth > placeIds.length - 1) {
                         console.log('solved???');
                     }
-                    placement();
+                    placement(puzzleDepth+1);
                 }
             });
         });
         // OK, if we're here, remove the tile
-        place.Tile = null;
+        if (!solutionFound) place.Tile = null;
     });
 }
 
