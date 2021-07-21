@@ -1,3 +1,4 @@
+import { default as GU } from "./GridUtils.mjs";
 export default class Tile {
     // content is a size 10 array of strings. we can split it up on construction
     constructor(id, content) {
@@ -101,6 +102,9 @@ export default class Tile {
         }
     }
 
+    // Note: In Node 14, we can use private prefix # 
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields#browser_compatibility
+
     _doRotation(state) {
         /**
          * rotation state
@@ -114,21 +118,11 @@ export default class Tile {
          * 21 13
          */
 
-        for (let x = 0; x <= state.Rotation; x++) {
+        for (let x = 0; x < state.Rotation; x++) {
             // TODO: Maybe the individual rotations could be stored? Remember flips haven't been performed yet.
-            this._rotate90cw();
+            this.Content = GU.Rotate90CW(this.Content);
+            continue;
         }
-    }
-
-    _rotate90cw() {
-        let newContent = new Array(10).fill(0).map(() => new Array(10));
-        for (let i = 0; i < 10; i++) {
-            for (let j = 0; j < 10; j++) {
-                const item = this.Content[i][j];
-                newContent[j][9 - i] = item;
-            }
-        }
-        this.Content = newContent;
     }
 
     _doFlips(state) {
@@ -146,45 +140,18 @@ export default class Tile {
 
         switch (state.Flip) {
             case 1:
-                this._flipH();
+                this.Content = GU.FlipH(this.Content);
                 break;
             case 2:
-                this._flipV();
+                this.Content = GU.FlipV(this.Content);
                 break;
             case 3:
-                this._flipH();
-                this._flipV();
+                this.Content = GU.FlipH(this.Content);
+                this.Content = GU.FlipV(this.Content);
                 break;
             default:
                 break;
         }
-    }
-
-    // Note: In Node 14, we can use private prefix # 
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields#browser_compatibility
-    _flipH() {
-        let newContent = [];
-        for (let i = 0; i < this.Content.length; i++) {
-            const row = this.Content[i];
-            let newRow = [];
-            for (let j = 0; j < row.length; j++) {
-                const item = row[row.length - 1 - j]; // Start from end of row, move back
-                newRow.push(item);
-            }
-            newContent.push(newRow);
-        }
-
-        this.Content = newContent;
-    }
-
-    _flipV() {
-        let newContent = [];
-        for (let i = this.Content.length - 1; i >= 0; i--) {
-            const row = this.Content[i]; // Start from last row and push it
-            newContent.push(row);
-        }
-
-        this.Content = newContent;
     }
 
     //getRow by id?
