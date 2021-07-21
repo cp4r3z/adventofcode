@@ -171,7 +171,7 @@ let seaMonstersAllFound = false;
         if (!seaMonsterFound) return;
 
         // now keep finding sea monsters until you can't anymore
-        while (markSeaMonster()){
+        while (markSeaMonster()) {
             console.log('found another!');
         }
 
@@ -180,7 +180,14 @@ let seaMonstersAllFound = false;
 })
 
 // OK, now just count waves!
-console.log('part 2 answer.....')
+
+let waves = 0;
+puzzle.Solution.forEach(row => {
+    row.forEach(space => {
+        if (space === '#') waves++;
+    })
+})
+console.log('part 2 answer.....' + waves);
 
 function markSeaMonster() {
     //   01234567890123456789
@@ -193,7 +200,7 @@ function markSeaMonster() {
     const offsets = [
         [18],
         [0, 5, 6, 11, 12, 17, 18, 19],
-        [1, 4, 7, 10,13, 16]
+        [1, 4, 7, 10, 13, 16]
     ];
 
     const sl = puzzle._originalSolution.length; // solution length index
@@ -216,14 +223,14 @@ function markSeaMonster() {
                     if (xx > (sl - 1)) return false;
 
                     const evaluatedSpace = puzzle.Solution[yy][xx];
-                    tempSeaMonsterSpaces.push({x:xx,y:yy});
+                    tempSeaMonsterSpaces.push({ x: xx, y: yy });
 
                     return evaluatedSpace === "#";
                 });
             });
             if (seaMonsterFound) {
                 console.log('found one!');
-                tempSeaMonsterSpaces.forEach(space=>{
+                tempSeaMonsterSpaces.forEach(space => {
                     puzzle.Solution[space.y][space.x] = 'O';
                 });
                 return seaMonsterFound;
