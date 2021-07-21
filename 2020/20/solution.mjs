@@ -158,15 +158,29 @@ puzzle.storeSolution();
 
 console.log('hi charles');
 
+let seaMonstersAllFound = false;
+
 [0, 1, 2, 3].forEach(Flip => {
     [0, 1, 2, 3].forEach(Rotation => {
+        if (seaMonstersAllFound) return;
         console.clear();
         puzzle.setSolutionState({ Flip, Rotation });
         puzzle.printSolution();
         //puzzle.storeSolution();
-        markSeaMonster();
+        const seaMonsterFound = markSeaMonster();
+        if (!seaMonsterFound) return;
+
+        // now keep finding sea monsters until you can't anymore
+        while (markSeaMonster()){
+            console.log('found another!');
+        }
+
+        seaMonstersAllFound = true;
     })
 })
+
+// OK, now just count waves!
+console.log('part 2 answer.....')
 
 function markSeaMonster() {
     //   01234567890123456789
@@ -174,28 +188,45 @@ function markSeaMonster() {
     //1  #    ##    ##    ###
     //2   #  #  #  #  #  #   
 
+    let seaMonsterFound = false;
+
     const offsets = [
         [18],
         [0, 5, 6, 11, 12, 17, 18, 19],
-        [1, 4, 7, 10.13, 16]
+        [1, 4, 7, 10,13, 16]
     ];
 
     const sl = puzzle._originalSolution.length; // solution length index
     for (let y = 0; y < sl; y++) {
         for (let x = 0; x < sl; x++) {
+            if (seaMonsterFound) continue; // maybe not needed
+
+            if (y === 2 && x === 2) {
+                const test = true;
+            }
+
+            const tempSeaMonsterSpaces = [];
+
             //this.Solution[i][j] = this._originalSolution[i][j];
-            const seaMonsterFound = [0, 1, 2].every(yOffset => {
+            seaMonsterFound = [0, 1, 2].every(yOffset => {
                 return offsets[yOffset].every(xOffset => {
                     const yy = y + yOffset;
                     if (yy > (sl - 1)) return false;
                     const xx = x + xOffset;
                     if (xx > (sl - 1)) return false;
 
-                    return puzzle.Solution[yy][xx] === "#";
+                    const evaluatedSpace = puzzle.Solution[yy][xx];
+                    tempSeaMonsterSpaces.push({x:xx,y:yy});
+
+                    return evaluatedSpace === "#";
                 });
             });
             if (seaMonsterFound) {
                 console.log('found one!');
+                tempSeaMonsterSpaces.forEach(space=>{
+                    puzzle.Solution[space.y][space.x] = 'O';
+                });
+                return seaMonsterFound;
             }
         }
     }

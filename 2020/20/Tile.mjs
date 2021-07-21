@@ -121,7 +121,6 @@ export default class Tile {
         for (let x = 0; x < state.Rotation; x++) {
             // TODO: Maybe the individual rotations could be stored? Remember flips haven't been performed yet.
             this.Content = GU.Rotate90CW(this.Content);
-            continue;
         }
     }
 
