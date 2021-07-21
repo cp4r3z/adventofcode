@@ -164,6 +164,7 @@ let seaMonstersAllFound = false;
     [0, 1, 2, 3].forEach(Rotation => {
         if (seaMonstersAllFound) return;
         console.clear();
+        console.log();
         puzzle.setSolutionState({ Flip, Rotation });
         puzzle.printSolution();
         //puzzle.storeSolution();
@@ -186,7 +187,9 @@ puzzle.Solution.forEach(row => {
     row.forEach(space => {
         if (space === '#') waves++;
     })
-})
+});
+
+puzzle.printSolution();
 console.log('part 2 answer.....' + waves);
 
 function markSeaMonster() {
