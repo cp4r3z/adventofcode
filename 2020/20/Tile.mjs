@@ -83,7 +83,7 @@ export default class Tile {
             // Determine new content
             // Reset the content to original state if changes are being made
             if (state.Rotation > 0 || state.Flip > 0) {
-                this.Content = this.StateContentMap.get(this.createStateKey()).Content;
+                this.Content = this.StateContentMap.get(this.createStateKey()).Content; // TODO: Why is this working?
             }
 
             this._doRotation(state);
@@ -114,7 +114,7 @@ export default class Tile {
          * 21 13
          */
 
-        for (let x = 0; x < state.Rotation; x++) {
+        for (let x = 0; x <= state.Rotation; x++) {
             // TODO: Maybe the individual rotations could be stored? Remember flips haven't been performed yet.
             this._rotate90cw();
         }

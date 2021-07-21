@@ -114,18 +114,93 @@ export default class Puzzle extends Map {
         }
 
         if (print || write) {
-            for (let y = 0; y < this.Solution.length; y++) {
-                const row = this.Solution[y].join('');
-                if (print) console.log(row);
-                if (write) {
-                    // TODO: write to file
-                }
-            }
+            this.printSolution();
+        }
+    }
+
+    printSolution(){
+        for (let y = 0; y < this.Solution.length; y++) {
+            const row = this.Solution[y].join('');
+            console.log(row);
+            // if (write) {
+            //     // TODO: write to file
+            // }
         }
     }
 
     setSolutionState(state = { Flip: 0, Rotation: 0 }) {
+        // Reset state to original
+        const si = this._originalSolution.length; // solution length index
+        for (let i = 0; i < si; i++) {
+            for (let j = 0; j < si; j++) {
+                this.Solution[i][j] = this._originalSolution[i][j];
+            }
+        }
+        this._doRotation(state);
+        this._doFlips(state);
+    }
 
+    _doFlips(state) {
+        switch (state.Flip) {
+            case 1:
+                this._flipH();
+                break;
+            case 2:
+                this._flipV();
+                break;
+            case 3:
+                this._flipH();
+                this._flipV();
+                break;
+            default:
+                break;
+        }
+    }
+
+    _doRotation(state) {
+        for (let x = 0; x <= state.Rotation; x++) {
+            // TODO: Maybe the individual rotations could be stored? Remember flips haven't been performed yet.
+            this._rotate90cw();
+        }
+    }
+
+    _rotate90cw() {
+        let newContent = new Array(this._originalSolution.length).fill(0).map(() => new Array(this._originalSolution.length));
+        const si = this._originalSolution.length -1; // solution length index
+        for (let i = 0; i < si; i++) {
+            for (let j = 0; j < si; j++) {
+                const item = this.Solution[i][j];
+                newContent[j][si - i] = item;
+            }
+        }
+        this.Solution = newContent;
+    }
+
+    _flipH() {
+        const si = this._originalSolution.length -1; // solution length index
+        let newContent = [];
+        for (let i = 0; i <= si; i++) {
+            const row = this._originalSolution[i];
+            let newRow = [];
+            for (let j = 0; j < row.length; j++) {
+                const item = row[row.length - 1 - j]; // Start from end of row, move back
+                newRow.push(item);
+            }
+            newContent.push(newRow);
+        }
+
+        this.Solution = newContent;
+    }
+
+    _flipV() {
+        const si = this._originalSolution.length -1; // solution length index
+        let newContent = [];
+        for (let i = si; i >= 0; i--) {
+            const row = this._originalSolution[i]; // Start from last row and push it
+            newContent.push(row);
+        }
+
+        this.Solution = newContent;
     }
 
 }

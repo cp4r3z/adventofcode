@@ -8,7 +8,7 @@ import Tile from './Tile.mjs';
 import Puzzle from './Puzzle.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./tinput.txt', import.meta.url);
 
 const arrInput = multiLine.toStrArray(inputFilePath);
 
@@ -119,7 +119,7 @@ function placement(depth) {
 
         // TODO: This isn't at ALL efficient. We need to know which tiles can actually belong in place based on surrounding tiles
         // so, for all surrounding places, if they have tiles, find a potential neighbor tile that they can all have.
-        
+
         // If the PLACE is a corner, only place a corner. etc...
         if (place.IsCorner && !tile.IsCorner) return;
         if (place.IsEdge && !tile.IsEdge) return;
@@ -157,3 +157,46 @@ console.log('\n');
 puzzle.storeSolution();
 
 console.log('hi charles');
+
+[0, 1, 2, 3].forEach(Flip => {
+    [0, 1, 2, 3].forEach(Rotation => {
+        console.clear();
+        puzzle.setSolutionState({ Flip, Rotation });
+        puzzle.printSolution();
+        //puzzle.storeSolution();
+        markSeaMonster();
+    })
+})
+
+function markSeaMonster() {
+    //   01234567890123456789
+    //0                    # 
+    //1  #    ##    ##    ###
+    //2   #  #  #  #  #  #   
+
+    const offsets = [
+        [18],
+        [0, 5, 6, 11, 12, 17, 18, 19],
+        [1, 4, 7, 10.13, 16]
+    ];
+
+    const sl = puzzle._originalSolution.length; // solution length index
+    for (let y = 0; y < sl; y++) {
+        for (let x = 0; x < sl; x++) {
+            //this.Solution[i][j] = this._originalSolution[i][j];
+            const seaMonsterFound = [0, 1, 2].every(yOffset => {
+                return offsets[yOffset].every(xOffset => {
+                    const yy = y + yOffset;
+                    if (yy > (sl - 1)) return false;
+                    const xx = x + xOffset;
+                    if (xx > (sl - 1)) return false;
+
+                    return puzzle.Solution[yy][xx] === "#";
+                });
+            });
+            if (seaMonsterFound) {
+                console.log('found one!');
+            }
+        }
+    }
+}
