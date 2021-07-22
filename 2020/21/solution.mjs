@@ -91,3 +91,40 @@ const part1 = [...ingredients].reduce((acc, [key, ingredient]) => {
 }, 0);
 
 console.log(`Year 2020 Day 21 Part 1 Solution: ${part1}`);
+
+// filter the ingredients list of all non-dangerous ingredients
+const dangerousIngredients = new Map();
+ingredients.forEach((ingredient, key) => {
+    if (ingredient.PossibleAllergens.size > 0) dangerousIngredients.set(key, ingredient);
+});
+
+// Build the canonical list 
+const canonical = new Set();
+
+while (dangerousIngredients.size !== canonical.size) {
+    dangerousIngredients.forEach(ingredient => {
+        if (ingredient.PossibleAllergens.size === 1) {
+            if (canonical.has(ingredient)) return;
+
+            // "Each allergen is found in exactly one ingredient."
+            // Remove this allergen from all _other_ ingredients
+            const knownAllergen = ingredient.PossibleAllergens.values().next().value;
+            ingredients.forEach(oIngredient => {
+                if (ingredient.Name === oIngredient.Name) return;
+                oIngredient.PossibleAllergens.delete(knownAllergen);
+            });
+            canonical.add(ingredient);
+        }
+    });
+}
+
+const part2 = [...canonical]
+    .sort((ingredientA, ingredientB) => {
+        const allergenA = ingredientA.PossibleAllergens.values().next().value;
+        const allergenB = ingredientB.PossibleAllergens.values().next().value;
+        return (allergenA.Name < allergenB.Name) ? -1 : 1;
+    })
+    .map(ingredient => ingredient.Name)
+    .join(',');
+
+console.log(`Year 2020 Day 21 Part 2 Solution: ${part2}`);
