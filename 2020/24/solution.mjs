@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine
     .toStrArray(inputFilePath)
     .map(parseInputMap); // Specific to Puzzle
@@ -60,11 +60,15 @@ class HexTile {
     }
 
     _fillNeighbors() {
-        if (this.Neighbors.size === 6) return;
         HexTile.neighborOffsets.forEach((offset, key) => {
             const nCoordinate = this._offsetCoordinate(offset);
-            this.Neighbors.add(tiles.get(nCoordinate.toKey()) || new HexTile(nCoordinate));
+            const newNeighbor = tiles.get(nCoordinate.toKey()) || new HexTile(nCoordinate);
+            this.Neighbors.add(newNeighbor);
+            newNeighbor.Neighbors.add(this); // Bi-directional link!
         });
+        if (this.Neighbors.size > 6) {
+            console.error('This should never happen');
+        }
     }
 
     // Takes a Coordinate and returns a Coordinate
