@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./tinput.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 class Rule {
@@ -16,8 +16,11 @@ class Rule {
      * 3: 1 2 => [ [1,2] ]
      */
 
-    constructor(arrSubs) {
+    constructor(key, strRule, arrSubs) {
+        this.Key = key; // Probably shouldn't use this, but it's good for debugging
+        this.RuleString = strRule;
         this.SubRules = arrSubs;
+        this.IsLeaf = arrSubs.length === 0;
     }
 }
 
@@ -37,8 +40,8 @@ arrInput.forEach(line => {
             }
             // let's parse out the key and rule
             const matchesKR = line.match(reKeyAndRule);
-            const key = parseInt( matchesKR[1]);
-            const rule = matchesKR[2];
+            const key = parseInt(matchesKR[1]);
+            let rule = matchesKR[2];
 
             let arrRule = []; // outer rule. needs inner arrays to be pushed in.
             if (rule.includes('|')) {
@@ -48,20 +51,39 @@ arrInput.forEach(line => {
                 const sub2 = matchesSubs[2].split(' ').map(s => parseInt(s.trim()));
                 arrRule.push(sub1);
                 arrRule.push(sub2);
-            } else {
+            } else if (rule.includes('\"')) {
+                rule = rule.match(/\"(\w)\"/)[1];
+                // leave arrRule empty
+            }
+            else {
                 // no subs, only sequence
                 arrRule.push(rule.split(' ').map(s => parseInt(s.trim())));
             }
-            rules.set(key, new Rule(arrRule));
-
+            rules.set(key, new Rule(key, rule, arrRule));
             break;
         case 1:
-                messages.push(line);
+            messages.push(line);
             break;
         default:
             console.error('bad parsing');
             break;
     }
 });
+
+// Now go through again and create subrule pointers
+rules.forEach(rule => {
+    const ptrSubRules = [];
+    rule.SubRules.forEach(sr => {
+        const ptrSubRule = [];
+        sr.forEach(r => {
+            // "r" should be the integer key for the sub-rule.
+            ptrSubRule.push(rules.get(r));
+        });
+        ptrSubRules.push(ptrSubRule);
+    });
+    rule.SubRules = ptrSubRules;
+});
+
+
 
 console.log(`Year 2020 Day 19 Part 1 Solution: ${part1}`);
