@@ -126,6 +126,11 @@ while (!allPositionsSize1()){
     });
 }
 
+positions.forEach((pos,i)=>{
+    const val = pos.values().next().value;
+    fields.get(val).ticketIndex=i;
+});
+
 let part2=1;
 fields.forEach((data,fieldName)=>{
     if (fieldName.includes('departure')){
