@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./t2input.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 class MinMax {
@@ -67,32 +67,34 @@ function isValueValid(value) {
 }
 
 let part1 = 0; // ticket scanning error rate
-nearbyTickets.forEach(ticket => {
+const invalidTickets = [];
+nearbyTickets.forEach((ticket,i) => {
     ticket.forEach(value => {
         const TEST = isValueValid(value);
         if (!isValueValid(value)) {
             part1 += value;
+            invalidTickets.push(i);
         }
     });
 });
 
 console.log(`Year 2020 Day 16 Part 1 Solution: ${part1}`);
 
-let positions = new Array(fields.size).fill(false); // marked false because it's not determined yet
+let positions = new Array(fields.size).fill(0).map(()=>new Set());
+
+// REMOVE BAD tickets!
+
+const validNearbyTickets = nearbyTickets.filter((v,i)=>invalidTickets.indexOf(i)===-1);
 
 function allPositionsFound(){
-    return positions.reduce((acc,cur)=>acc&&cur,true);
+    return positions.reduce((acc,cur)=>acc&&(cur.size>0),true);
 }
 
 while (!allPositionsFound()) {
     fields.forEach((data, fieldName) => {
-        if (data.ticketIndex) return; // Already known
-
-        let found = false;
+        //if (data.ticketIndex) return; // Already known
         positions.forEach((pos, i) => {
-            if (pos) return;
-            if (found) return;
-            const fieldValidAtPos = nearbyTickets.every(ticket => {
+            const fieldValidAtPos = validNearbyTickets.every(ticket => {
                 const value = ticket[i];
                 const isValid = data.mms.some(mm => {
                     return value >= mm.Min && value <= mm.Max;
@@ -100,11 +102,27 @@ while (!allPositionsFound()) {
                 return isValid;
             });
             if (fieldValidAtPos) {
-                found = true;
-                positions[i] = true;
-                data.ticketIndex = i;
+                pos.add(fieldName);
+                //data.ticketIndex = i;
             }
         });
+    });
+}
+
+function allPositionsSize1(){
+    return positions.reduce((acc,cur)=>acc&&(cur.size===1),true);
+}
+
+while (!allPositionsSize1()){
+    positions.forEach((posi,i)=>{
+        if (posi.size===1){
+            const val = posi.values().next().value;
+            // remove from others
+            positions.forEach((posj,j)=>{
+                if (j===i) return;
+                posj.delete(val);
+            });
+        }
     });
 }
 
