@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./tinput.txt', import.meta.url);
 const arrInput = multiLine
     .toStrArray(inputFilePath)
     .map(parseInputMap); // Specific to Puzzle
@@ -76,6 +76,11 @@ class HexTile {
         );
     }
 
+    get activeNeighborCount() {
+        return [...this.Neighbors.values()]
+            .reduce((acc, tile) => tile.State ? acc + 1 : acc, 0);
+    }
+
     getNeighbor(str) {
         const offset = HexTile.neighborOffsets.get(str);
         const nCoordinate = this._offsetCoordinate(offset);
@@ -102,10 +107,34 @@ arrInput.forEach(line => {
     currentTile.toggleState();
 });
 
+// Count black (true) tiles
 const part1 = [...tiles.values()]
     .reduce((acc, tile) => tile.State ? acc + 1 : acc, 0);
 
 console.log(`Year 2020 Day 24 Part 1 Solution: ${part1}`);
+
+// Part 2
+
+for (let i = 0; i < 100; i++) {
+    const tilesToToggle = [];
+    tiles.forEach(tile => {
+        const count = tile.activeNeighborCount;
+        if (tile.State) {
+            // Black
+            if (count === 0 || count > 2) tilesToToggle.push(tile);
+        } else {
+            // White
+            if (count === 2) tilesToToggle.push(tile);
+        }
+    });
+    tilesToToggle.forEach(tile => tile.toggleState());
+}
+
+// Count black (true) tiles
+const part2 = [...tiles.values()]
+    .reduce((acc, tile) => tile.State ? acc + 1 : acc, 0);
+
+console.log(`Year 2020 Day 24 Part 2 Solution: ${part2}`);
 
 function parseInputMap(line) {
     const newLine = [];
