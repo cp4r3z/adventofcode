@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./t2input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 class MinMax {
@@ -33,7 +33,12 @@ arrInput.forEach(line => {
             const key = matches[1];
             const mm0 = new MinMax(parseInt(matches[2]), parseInt(matches[3]));
             const mm1 = new MinMax(parseInt(matches[4]), parseInt(matches[5]));
-            fields.set(key, [mm0, mm1]);
+            fields.set(key,
+                {
+                    ticketIndex: undefined, // position of value on ticket
+                    mms: [mm0, mm1]
+                }
+            );
             break;
         case 1:
             if (line.includes('ticket')) break;
@@ -54,8 +59,8 @@ arrInput.forEach(line => {
 });
 
 function isValueValid(value) {
-    return [...fields.values()].some(field => {        
-        return field.some(mm => {
+    return [...fields.values()].some(field => {
+        return field.mms.some(mm => {
             return value >= mm.Min && value <= mm.Max;
         });
     });
@@ -65,10 +70,49 @@ let part1 = 0; // ticket scanning error rate
 nearbyTickets.forEach(ticket => {
     ticket.forEach(value => {
         const TEST = isValueValid(value);
-        if (!isValueValid(value)) { 
+        if (!isValueValid(value)) {
             part1 += value;
-         }
+        }
     });
 });
 
 console.log(`Year 2020 Day 16 Part 1 Solution: ${part1}`);
+
+let positions = new Array(fields.size).fill(false); // marked false because it's not determined yet
+
+function allPositionsFound(){
+    return positions.reduce((acc,cur)=>acc&&cur,true);
+}
+
+while (!allPositionsFound()) {
+    fields.forEach((data, fieldName) => {
+        if (data.ticketIndex) return; // Already known
+
+        let found = false;
+        positions.forEach((pos, i) => {
+            if (pos) return;
+            if (found) return;
+            const fieldValidAtPos = nearbyTickets.every(ticket => {
+                const value = ticket[i];
+                const isValid = data.mms.some(mm => {
+                    return value >= mm.Min && value <= mm.Max;
+                });
+                return isValid;
+            });
+            if (fieldValidAtPos) {
+                found = true;
+                positions[i] = true;
+                data.ticketIndex = i;
+            }
+        });
+    });
+}
+
+let part2=1;
+fields.forEach((data,fieldName)=>{
+    if (fieldName.includes('departure')){
+        part2*= yourTicket[data.ticketIndex];
+    }
+});
+
+console.log(`Year 2020 Day 16 Part 2 Solution: ${part2}`);
