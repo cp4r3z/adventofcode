@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./tinput.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 class Rule {
@@ -23,7 +23,7 @@ class Rule {
         this.IsLeaf = arrSubs.length === 0;
     }
 
-    isValid(str) {
+    run(str) {
         if (this.IsLeaf) {
             let newStr = str.split('');
             const testChar = newStr.shift();
@@ -40,17 +40,17 @@ class Rule {
         for (let si = 0; si < this.SubRules.length; si++) {
             const workStrBackup = workStr;
             const rules = this.SubRules[si];
-            
+
             for (let ri = 0; ri < rules.length; ri++) {
                 const rule = rules[ri];
-                workStr = rule.isValid(workStr);
+                workStr = rule.run(workStr);
             }
-         
-            subruleResults.push(workStr);         
+
+            subruleResults.push(workStr);
             workStr = workStrBackup;
         }
 
-        workStr =  subruleResults.sort()[0];
+        workStr = subruleResults.sort()[0];
 
         return workStr; // But we don't know which rule was the best.
     }
@@ -116,10 +116,14 @@ rules.forEach(rule => {
     rule.SubRules = ptrSubRules;
 });
 
-const test0 = rules.get(0).isValid('ababbb'); // good
-const test1 = rules.get(0).isValid('bababa');
-const test2 = rules.get(0).isValid('abbbab'); // good
-const test3 = rules.get(0).isValid('aaabbb');
-const test4 = rules.get(0).isValid('aaaabbb');
+const test0 = rules.get(0).run('ababbb'); // good
+const test1 = rules.get(0).run('bababa');
+const test2 = rules.get(0).run('abbbab'); // good
+const test3 = rules.get(0).run('aaabbb');
+const test4 = rules.get(0).run('aaaabbb');
+
+const part1 = messages.filter(message => {
+    return rules.get(0).run(message).length === 0;
+}).length;
 
 console.log(`Year 2020 Day 19 Part 1 Solution: ${part1}`);
