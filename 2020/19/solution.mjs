@@ -29,46 +29,30 @@ class Rule {
             const testChar = newStr.shift();
             newStr = newStr.join(''); // This isn't super efficient.
             const valid = testChar === this.RuleString; // last step in recursion
-            return valid ? newStr : str; // wish we could return false....
+            const warningStr = 'c' + str;
+            return valid ? newStr : warningStr; // wish we could return false....
         }
 
         // Not a leaf
         let workStr = str;
+        const subruleResults = [];
+
         for (let si = 0; si < this.SubRules.length; si++) {
             const workStrBackup = workStr;
             const rules = this.SubRules[si];
-            //const workStrLengthPrev = workStr.length;
+            
             for (let ri = 0; ri < rules.length; ri++) {
                 const rule = rules[ri];
-                //const workStrLengthPrev = workStr.length;
                 workStr = rule.isValid(workStr);
-                
             }
-            if (workStr.length === str.length) {
-                // didn't do anything
-                break;
-            }
+         
+            subruleResults.push(workStr);         
+            workStr = workStrBackup;
         }
 
-        return workStr;
+        workStr =  subruleResults.sort()[0];
 
-
-        //return workStr.length === 0; // ?
-
-        // let workStr = str;
-
-        // const subsValid = this.SubRules.forEach(rules=>{       
-        //     let keepGoing = true; 
-        //     rules.forEach(rule=>{
-        //         if (!keepGoing) return;
-        //         workStr = rule.isValid(workStr);
-        //         keepGoing = !!workStr; // still chars left
-        //     });
-        //     // let keepGoing = true;
-        //     // while ()
-        // });
-
-        // return workStr.length===0;
+        return workStr; // But we don't know which rule was the best.
     }
 }
 
