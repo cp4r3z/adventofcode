@@ -11,7 +11,7 @@ import trinputArrMjs from './trinputArr.mjs';
 //const inputFilePath = new URL('./input.txt', import.meta.url);
 //const arrInput = multiLine.toStrArray(inputFilePath);
 
-const input = tinputArrMjs;
+const input = inputArrMjs;
 
 function play(input) {
     let player1 = input.player1;
@@ -43,32 +43,32 @@ for (let i = 1; i <= winner.length; i++) {
 console.log(`Year 2020 Day 22 Part 1 Solution: ${part1}`);
 
 // returns object!
-// Note: I'm not sure deckHashHistory is necessary...
-function play2(input, deckHashHistory = []) {
-    console.log('play');
+function play2(input) {
+    //console.log('play');
     let player1 = input.player1;
     let player2 = input.player2;
 
-    const playHistory = JSON.parse(JSON.stringify(deckHashHistory));
+    const playHistory = [];
 
     while (player1.length > 0 && player2.length > 0) {
-        const p1Turn = player1.shift();
-        const p2Turn = player2.shift();
-
+        
         const hash = deckHash({player1,player2});
         const alreadyPlayed = playHistory.includes(hash);
         if (alreadyPlayed) {
-            console.log('infinite!');
+            //console.log('infinite!');
             return {
                 winner: 1,
-                deck: {player1,player2}
+                deck: player1
             }
         }
         playHistory.push(hash);
+        
+        const p1Turn = player1.shift();
+        const p2Turn = player2.shift();
 
-        console.log('');
-        console.log(`Player 1: ${player1.join(',')} Plays ${p1Turn} `);
-        console.log(`Player 2: ${player2.join(',')} Plays ${p2Turn} `);
+        // console.log('');
+        // console.log(`Player 1: ${player1.join(',')} Plays ${p1Turn} `);
+        // console.log(`Player 2: ${player2.join(',')} Plays ${p2Turn} `);
 
         const doSubGame = p1Turn <= player1.length &&
             p2Turn <= player2.length;
@@ -79,17 +79,8 @@ function play2(input, deckHashHistory = []) {
                 player1: player1.slice(0, p1Turn),
                 player2: player2.slice(0, p2Turn)
             };
-            const hashsub = deckHash(inputSub);
-            const alreadyPlayedsub = deckHashHistory.includes(hashsub);
-            if (alreadyPlayedsub) {
-                console.log('infinite!');
-                return {
-                    winner: 1,
-                    deck: inputSub
-                }
-            }
-            const newHistory = deckHashHistory.concat(hash);
-            const subResult = play2(inputSub, newHistory);
+            
+            const subResult = play2(inputSub);
             if (subResult.winner === 1) {
                 player1 = player1.concat([p1Turn, p2Turn]);
             } else {
@@ -105,8 +96,6 @@ function play2(input, deckHashHistory = []) {
         }
 
     }
-
-    //const hash = deckHash({});
 
     return {
         winner: (player1.length > player2.length) ? 1 : 2,
@@ -125,6 +114,7 @@ function deckHash(input) {
 
 const input2 = inputArrMjs;
 
+// Performance Note! This does take awhile. There are probably some efficiency gains to be had.
 const winner2 = play2(JSON.parse(JSON.stringify(input2)));
 
 let part2 = 0;
