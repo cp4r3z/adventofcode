@@ -5,6 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 import inputArrMjs from './inputArr.mjs';
 import tinputArrMjs from './tinputArr.mjs';
+import trinputArrMjs from './trinputArr.mjs';
 
 // Parse Input
 //const inputFilePath = new URL('./input.txt', import.meta.url);
@@ -42,14 +43,28 @@ for (let i = 1; i <= winner.length; i++) {
 console.log(`Year 2020 Day 22 Part 1 Solution: ${part1}`);
 
 // returns object!
+// Note: I'm not sure deckHashHistory is necessary...
 function play2(input, deckHashHistory = []) {
     console.log('play');
     let player1 = input.player1;
     let player2 = input.player2;
 
+    const playHistory = JSON.parse(JSON.stringify(deckHashHistory));
+
     while (player1.length > 0 && player2.length > 0) {
         const p1Turn = player1.shift();
         const p2Turn = player2.shift();
+
+        const hash = deckHash({player1,player2});
+        const alreadyPlayed = playHistory.includes(hash);
+        if (alreadyPlayed) {
+            console.log('infinite!');
+            return {
+                winner: 1,
+                deck: {player1,player2}
+            }
+        }
+        playHistory.push(hash);
 
         console.log('');
         console.log(`Player 1: ${player1.join(',')} Plays ${p1Turn} `);
@@ -64,9 +79,9 @@ function play2(input, deckHashHistory = []) {
                 player1: player1.slice(0, p1Turn),
                 player2: player2.slice(0, p2Turn)
             };
-            const hash = deckHash(inputSub);
-            const alreadyPlayed = deckHashHistory.includes(hash);
-            if (alreadyPlayed) {
+            const hashsub = deckHash(inputSub);
+            const alreadyPlayedsub = deckHashHistory.includes(hashsub);
+            if (alreadyPlayedsub) {
                 console.log('infinite!');
                 return {
                     winner: 1,
@@ -108,12 +123,14 @@ function deckHash(input) {
     return hash;
 }
 
-const winner2 = play2(JSON.parse(JSON.stringify(input)));
+const input2 = inputArrMjs;
+
+const winner2 = play2(JSON.parse(JSON.stringify(input2)));
 
 let part2 = 0;
 
-for (let i = 1; i <= winner2.length; i++) {
-    part2 += i * winner2[winner2.length - i];
+for (let i = 1; i <= winner2.deck.length; i++) {
+    part2 += i * winner2.deck[winner2.deck.length - i];
 }
 
 console.log(`Year 2020 Day 22 Part 2 Solution: ${part2}`);
