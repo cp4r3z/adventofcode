@@ -57,33 +57,46 @@ class Rule {
     }
 
     // complete list of possible strings
-    build(depth = 0, possibles = ['']) {
+    build(possibleStringsPtr, str = '') {
+        
         if (this.IsLeaf) {
-            return possibles.map(p => p += this.RuleString);
-            //return str += this.RuleString;
-        }
-
-        let morePossibles = [];
-        
-            for (let si = 0; si < this.SubRules.length; si++) {
-                let possibleSub = JSON.parse(JSON.stringify(possibles));    
-                const rules = this.SubRules[si];
-
-                for (let ri = 0; ri < rules.length; ri++) {
-                    const rule = rules[ri];
-                    const possibleSubPlusRule = rule.build(depth + 1, possibleSub);
-                }
-
-                morePossibles.push(possibleSub);
-                
+            //return possibles.map(p => p += this.RuleString);
+            if (!this.RuleString) {
+                console.error('no rulestring??');
             }
-        
-
-        if (depth === 0) {
-            this.PossibleStrings.push(morePossibles);
-        } else {
-            return morePossibles;
+            return str += this.RuleString;
         }
+
+        //let morePossibles = [];
+
+        for (let si = 0; si < this.SubRules.length; si++) {
+            //let possibleSub = JSON.parse(JSON.stringify(possibles));    
+
+            let workStr = str;
+
+            const rules = this.SubRules[si];
+
+            for (let ri = 0; ri < rules.length; ri++) {
+                const rule = rules[ri];
+
+                const test = rule.build(possibleStringsPtr, workStr);
+                if (!test){
+                    console.error('no build?');
+                }
+                workStr = rule.build(possibleStringsPtr, workStr);
+            }
+
+            //morePossibles.push(possibleSub);
+            possibleStringsPtr.push(workStr);
+
+        }
+
+
+        // if (depth === 0) {
+        //     this.PossibleStrings.push(morePossibles);
+        // } else {
+        //     return morePossibles;
+        // }
     }
 }
 
@@ -153,8 +166,9 @@ const test2 = rules.get(0).run('abbbab'); // good
 const test3 = rules.get(0).run('aaabbb');
 const test4 = rules.get(0).run('aaaabbb');
 
-rules.get(42).build();
 const rule42 = rules.get(42);
+rule42.build(rule42.PossibleStrings);
+
 
 //rules.get(42).build(possible31);
 
