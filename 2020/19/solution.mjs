@@ -21,6 +21,7 @@ class Rule {
         this.RuleString = strRule;
         this.SubRules = arrSubs;
         this.IsLeaf = arrSubs.length === 0;
+        this.PossibleStrings = [];
     }
 
     run(str) {
@@ -53,6 +54,36 @@ class Rule {
         workStr = subruleResults.sort()[0];
 
         return workStr; // But we don't know which rule was the best.
+    }
+
+    // complete list of possible strings
+    build(depth = 0, possibles = ['']) {
+        if (this.IsLeaf) {
+            return possibles.map(p => p += this.RuleString);
+            //return str += this.RuleString;
+        }
+
+        let morePossibles = [];
+        
+            for (let si = 0; si < this.SubRules.length; si++) {
+                let possibleSub = JSON.parse(JSON.stringify(possibles));    
+                const rules = this.SubRules[si];
+
+                for (let ri = 0; ri < rules.length; ri++) {
+                    const rule = rules[ri];
+                    const possibleSubPlusRule = rule.build(depth + 1, possibleSub);
+                }
+
+                morePossibles.push(possibleSub);
+                
+            }
+        
+
+        if (depth === 0) {
+            this.PossibleStrings.push(morePossibles);
+        } else {
+            return morePossibles;
+        }
     }
 }
 
@@ -121,6 +152,12 @@ const test1 = rules.get(0).run('bababa');
 const test2 = rules.get(0).run('abbbab'); // good
 const test3 = rules.get(0).run('aaabbb');
 const test4 = rules.get(0).run('aaaabbb');
+
+rules.get(42).build();
+const rule42 = rules.get(42);
+
+//rules.get(42).build(possible31);
+
 
 const part1 = messages.filter(message => {
     return rules.get(0).run(message).length === 0;
