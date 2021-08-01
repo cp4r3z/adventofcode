@@ -20,15 +20,23 @@ class Cup {
 }
 
 class Cups extends Map {
-    constructor(arr) {
+    constructor(arr, part2 = false) {
         super();
 
+        this.Part2 = part2;
         // Loop once to create cups
         arr.forEach((label, i) => {
             this.set(label, new Cup(label));
         });
 
-        this.CurrentCup = this.get(arr[0]); // The only time we use the index
+        // Note: This probably is not efficient. We need some kind of "virtual" on-demand cup.
+        if (this.Part2) {
+            for (let i = 10; i <= 1e6; i++) {
+                this.set(i, new Cup(i));
+            }
+        }
+
+        this.CurrentCup = this.get(arr[0]);
 
         // Loop again to arrange them
         arr.forEach((label, i) => {
@@ -47,6 +55,27 @@ class Cups extends Map {
             const cupNext = this.get(arr[iNext]);
             cup.arrange(cupNext, cupPrev);
         });
+
+        if (this.Part2) {
+            // Join the original list with the continuation
+            const arrStartCup = this.get(arr[0]);
+            const arrEndCup = this.get(arr[arr.length - 1]);
+
+            arrStartCup.Prev = this.get(1e6);
+            arrEndCup.Next = this.get(10);
+
+            for (let label = 10; label <= 1e6; label++) {
+                const cup = this.get(label);
+                if (label === 10) {
+                    cup.arrange(this.get(label + 1), arrEndCup);
+                }
+                else if (label === 1e6) {
+                    cup.arrange(arrStartCup, this.get(label - 1));
+                } else {
+                    cup.arrange(this.get(label + 1), this.get(label - 1));
+                }
+            }
+        }
     }
 
     takeTurn() {
@@ -71,7 +100,7 @@ class Cups extends Map {
         let validDestination;
         do {
             if (destination === 0) {
-                destination = 9
+                destination = this.Part2 ? 1e6 : 9;
             }
 
             validDestination = destination !== upCup1.Label &&
@@ -128,3 +157,15 @@ for (let i = 0; i < 100; i++) {
 }
 
 console.log(`Part 1 Solution is ${cups.print(true)}`);
+
+const cups2 = new Cups(arrInput, true);
+for (let i = 0; i < 10e6; i++) {
+    cups2.takeTurn();
+    if (DEBUG && i % 10e5 === 0) console.log(i);
+}
+
+const cw1 = cups2.get(1).Next;
+const cw2 = cw1.Next;
+const part2 = cw1.Label * cw2.Label;
+
+console.log(`Part 2 Solution is ${part2}`);
