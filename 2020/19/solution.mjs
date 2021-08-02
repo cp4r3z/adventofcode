@@ -57,14 +57,47 @@ class Rule {
     }
 
     // complete list of possible strings
-    build(possibleStringsPtr, str = '', isEnd=true) {
-        
+
+    build(str = '', nextRules = [], rulesFollowed = []) {
+        const nextRulesFollowed = JSON.parse(JSON.stringify(rulesFollowed));
+        nextRulesFollowed.push(this.Key);
+
+        if (this.IsLeaf) {
+            const newStr = str += this.RuleString;
+
+            if (nextRules.length === 0) {
+                // we're at an end!
+                console.log(`${newStr} ... ${nextRulesFollowed} `);
+                return;
+            } else {
+                // const nextRule2 = nextRules[0];
+                // const nextRules2 = nextRules.slice(1, nextRules.length );
+                nextRules[0].build(newStr, nextRules.slice(1, nextRules.length), nextRulesFollowed);
+            }
+        }
+
+        // Not a leaf
+
+        for (let si = 0; si < this.SubRules.length; si++) { // OR
+
+            const rules = this.SubRules[si];
+
+            // const nextRule = rules[0];
+            // const nextRules = rules.slice(1, rules.length);
+            rules[0].build(str, rules.slice(1, rules.length), nextRulesFollowed);
+        }
+
+    }
+
+
+    buildold(possibleStringsPtr, str = '', isEnd = true) {
+
         if (this.IsLeaf) {
             //return possibles.map(p => p += this.RuleString);
             if (!this.RuleString) {
                 console.error('no rulestring??');
             }
-            return  this.RuleString;
+            return this.RuleString;
         }
 
         //let morePossibles = [];
@@ -79,11 +112,11 @@ class Rule {
             for (let ri = 0; ri < rules.length; ri++) {
                 const rule = rules[ri];
 
-                const test = rule.build(possibleStringsPtr, workStr, ri===rules.length-1);
-                if (!test){
+                const test = rule.build(possibleStringsPtr, workStr, ri === rules.length - 1);
+                if (!test) {
                     console.error('no build?');
                 }
-                workStr += rule.build(possibleStringsPtr, workStr, ri===rules.length-1);
+                workStr += rule.build(possibleStringsPtr, workStr, ri === rules.length - 1);
             }
 
             if (isEnd) {
@@ -171,7 +204,7 @@ const test3 = rules.get(0).run('aaabbb');
 const test4 = rules.get(0).run('aaaabbb');
 
 const rule42 = rules.get(42);
-rule42.build(rule42.PossibleStrings);
+rule42.build();
 
 
 //rules.get(42).build(possible31);
