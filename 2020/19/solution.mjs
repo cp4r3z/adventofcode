@@ -57,14 +57,14 @@ class Rule {
     }
 
     // complete list of possible strings
-    build(possibleStringsPtr, str = '') {
+    build(possibleStringsPtr, str = '', isEnd=true) {
         
         if (this.IsLeaf) {
             //return possibles.map(p => p += this.RuleString);
             if (!this.RuleString) {
                 console.error('no rulestring??');
             }
-            return str += this.RuleString;
+            return  this.RuleString;
         }
 
         //let morePossibles = [];
@@ -79,15 +79,19 @@ class Rule {
             for (let ri = 0; ri < rules.length; ri++) {
                 const rule = rules[ri];
 
-                const test = rule.build(possibleStringsPtr, workStr);
+                const test = rule.build(possibleStringsPtr, workStr, ri===rules.length-1);
                 if (!test){
                     console.error('no build?');
                 }
-                workStr = rule.build(possibleStringsPtr, workStr);
+                workStr += rule.build(possibleStringsPtr, workStr, ri===rules.length-1);
             }
 
-            //morePossibles.push(possibleSub);
-            possibleStringsPtr.push(workStr);
+            if (isEnd) {
+                //morePossibles.push(possibleSub);
+                possibleStringsPtr.push(workStr);
+            } else {
+                return workStr;
+            }
 
         }
 
