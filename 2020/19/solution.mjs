@@ -56,6 +56,37 @@ class Rule {
         return workStr; // But we don't know which rule was the best.
     }
 
+    
+    // takes array of strings (partial possibilties)
+    getPossibilites(arrayFrom){
+
+        // remember you're IN a rule
+
+        if (this.IsLeaf) {
+           // add this.RuleString to all and return
+           return arrayFrom.map(str=>str+this.RuleString);
+        }
+
+        const arrayMore = arrayFrom.map(str=>{
+            
+            // each subrule contains rules, but the subrules are independent (parallel)
+            const arrSubRulesPossibilities = this.SubRules.map(rules=>{
+                // now apply these rules one after the other (serial)
+                const nextStr =  rules.reduce((accStr,rule)=>{
+                    return accStr+rule.getPossibilites([str]); // hmmm
+                },str);
+                return nextStr;
+            });
+            return arrSubRulesPossibilities; // just return it up top?
+
+
+            // returns an array (even if it's just one?)
+
+        });
+
+        // return arrayMore (flattened with .flat)
+    }
+    
     // complete list of possible strings
 
     build(str = '', nextRules = [], rulesFollowed = []) {
@@ -84,7 +115,12 @@ class Rule {
 
             // const nextRule = rules[0];
             // const nextRules = rules.slice(1, rules.length);
-            rules[0].build(str, rules.slice(1, rules.length), nextRulesFollowed);
+
+            rules[0].build(
+                str,
+                nextRules.concat(rules.slice(1, rules.length)), // !!! Or should it be the other way around?
+                nextRulesFollowed
+            );
         }
 
     }
