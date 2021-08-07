@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./t2input.txt', import.meta.url);
+const inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 class Rule {
@@ -166,101 +166,96 @@ const part1 = messages.filter(message => {
 console.log(`Year 2020 Day 19 Part 1 Solution: ${part1}`);
 
 // Part 2
-// Modify rules 8 and 11
+
+// Use what we know of the possible values of rule 31 and 41 to start slicing down each message.
+// It's not elegant, but it's what I thought of.
 
 const rule31 = rules.get(31);
-const rule42 = rules.get(42);
+//const rule42 = rules.get(42); // The PossibleString lengths are confirmed to be the same as rule 31
 
-//#region Not Necessary
-/*
-
-const rule8 = rules.get(8);
-const rule11 = rules.get(11);
-
-const rule8New = {
-    strRule: '42 | 42 8',
-    arrSubs: [[rule42], [rule42, rule8]] // Loops!
-};
-rule8.RuleString = rule8New.strRule;
-rule8.SubRules = rule8New.arrSubs;
-
-const rule11New = {
-    strRule: '42 31 | 42 11 31',
-    arrSubs: [[rule42, rule31], [rule42, rule11, rule31]] // Loops!
-};
-rule11.RuleString = rule11New.strRule;
-rule11.SubRules = rule11New.arrSubs;
-
-
-// Redo possible strings, but maybe not using recursion
-// Actually, we might not have had to do the above changes.
-
-const possibles31 = [...rule31.PossibleStrings]; // clone
-const possibles42 = [...rule42.PossibleStrings]; // clone
-
-// Rule 8 : just take existing possibles for 42, and start repeating them.
-
-// can I just use permutePossibles???
-
-let maxLoops = 2; // guess!!! Careful, this quickly gets out of control!
-let looped = 0;
-
-const possibles8 = [[...rule8.PossibleStrings]];
-do {
-    possibles8.push(rule8._permutePossibles(
-        [
-            possibles8[possibles8.length - 1],
-            possibles42
-        ])
-    );
-    looped++;
-} while (looped < maxLoops);
-rule8.PossibleStrings = possibles8.flat();
-
-// Rule 11: [all possibles for 42] [all possibles for 42] [all possibles for 42] ... [all possibles for 31] [all possibles for 31] [all possibles for 31]
-// So start with 42 31 (existing possibles) and then start prepending, appending combinations of 42 and 31
-
-maxLoops = 1;
-looped = 0;
-const possibles11 = [[...rule11.PossibleStrings]];
-do {
-    // permute 42 11
-    const poss_41_11 = rule11._permutePossibles(
-        [
-            possibles42,
-            possibles11[possibles11.length - 1]
-        ]).flat();
-
-    possibles11.push(rule11._permutePossibles(
-        [
-            poss_41_11,
-            possibles31
-        ])
-    );
-    looped++;
-} while (looped < maxLoops);
-rule11.PossibleStrings = possibles11.flat();
-
-//reset 0
-rules.get(0).PossibleStrings = false;
-
-*/
-//#endregion
-
-const rule3142Length = rule31.PossibleStrings[0].length;
-const rule3142Length2 = rule42.PossibleStrings[0].length;
+const rule3142Length = rule31.PossibleStrings[0].length; // Mercifully all possible string lengths are the same
 
 const part2 = messages.filter(message => {
-    //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.    
+    // If it satisfies the existing possible strings, no need for more work!
     const isValid = rules.get(0).getPossible().includes(message);
+    // if (isValid) console.log(message);
     if (isValid) return true;
 
     let workingMessage = message; // pass by value
 
-    // trim rule31 from end... but then you MUST trim rule42 from beginning
+    let keepSlicing = true;
+    let isValidForPart2 = false;
 
+    let mode = 11;
+    let rule11Satisfied = false;
+    let rule8Satisfied = false;
 
-    // then trim rule42 from beginning until the message is ''
+    while (keepSlicing) {
+
+        // TODO: Doesn't string have these operations???
+
+        const wMArr = workingMessage.split('');
+        const wmStart = wMArr.slice(0, rule3142Length).join('');
+        const wmEnd = wMArr.slice(-1 * rule3142Length).join('');
+
+        const startWith42 = rules.get(42).getPossible().includes(wmStart);
+        const endsWith31 = rules.get(31).getPossible().includes(wmEnd);
+
+        switch (mode) {
+            case 11:
+                // trim rule31 from end... and you MUST trim rule42 from beginning
+
+                if (startWith42 && endsWith31) {
+                    if (!rule11Satisfied) rule11Satisfied = true; // must get hit once to be valid for part 2
+                    workingMessage = wMArr.slice(rule3142Length, -1 * rule3142Length).join('');
+                    if (workingMessage.length === 0) {
+                        keepSlicing = false;
+                    }
+                    //keep going
+                } else {
+                    //otherwise keep going with rule 8
+                    mode = 8; // we don't know if it's actually ok at this point
+                }
+
+                break;
+
+            case 8:
+                // then trim rule42 from beginning until the message is ''
+                if (!startWith42) {
+                    keepSlicing = false;
+                    isValidForPart2 = false;
+                    break;
+                } else {
+                    if (!rule8Satisfied) rule8Satisfied = true; // must get hit once to be valid for part 2
+                    workingMessage = wMArr.slice(rule3142Length).join('');
+                    if (workingMessage.length === 0) {
+                        keepSlicing = false;
+                        isValidForPart2 = true;
+                    }
+                    //otherwise keep going
+                }
+
+                break;
+            default:
+                console.error('should never happen');
+                break;
+        }
+
+        // stop slicing if length is < rule3142Length
+        // mercifully, this is never hit
+        if (workingMessage.length < rule3142Length && workingMessage.length > 0) {
+            keepSlicing = false;
+            isValidForPart2 = false;
+        }
+
+    }
+
+    if (!rule11Satisfied || !rule8Satisfied) {
+        isValidForPart2 = false;
+    }
+
+    //if (isValidForPart2) console.log(message);
+    return isValidForPart2;
 
 }).length;
 
