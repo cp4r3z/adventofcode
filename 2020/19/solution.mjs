@@ -168,10 +168,13 @@ console.log(`Year 2020 Day 19 Part 1 Solution: ${part1}`);
 // Part 2
 // Modify rules 8 and 11
 
-const rule8 = rules.get(8);
-const rule11 = rules.get(11);
 const rule31 = rules.get(31);
 const rule42 = rules.get(42);
+
+//#region Not Necessary
+
+const rule8 = rules.get(8);
+const rule11 = rules.get(11);
 
 const rule8New = {
     strRule: '42 | 42 8',
@@ -186,12 +189,34 @@ const rule11New = {
 };
 rule11.RuleString = rule11New.strRule;
 rule11.SubRules = rule11New.arrSubs;
+//#endregion
 
 // Redo possible strings, but maybe not using recursion
+// Actually, we might not have had to do the above changes.
+
+const possibles31 = [...rule31.PossibleStrings]; // clone
+const possibles42 = [...rule42.PossibleStrings]; // clone
 
 // Rule 8 : just take existing possibles for 42, and start repeating them.
 
+// can I just use permutePossibles???
+
+const maxLoops = 2; // guess!!! Careful, this quickly gets out of control!
+let looped = 0;
+
+do {
+    const possibles8 = [...rule8.PossibleStrings];
+    rule8.PossibleStrings.push(rule8._permutePossibles([possibles42, possibles8]));
+    looped++;
+} while (looped < maxLoops);
+
 // Rule 11: [all possibles for 42] [all possibles for 42] [all possibles for 42] ... [all possibles for 31] [all possibles for 31] [all possibles for 31]
 // So start with 42 31 (existing possibles) and then start prepending, appending combinations of 42 and 31
+
+
+const part2 = messages.filter(message => {
+    //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.
+    return rules.get(0).getPossible().includes(message);
+}).length;
 
 console.log(`Year 2020 Day 19 Part 2 Solution: ${part2}`);
