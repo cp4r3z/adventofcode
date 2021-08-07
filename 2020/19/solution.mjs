@@ -201,22 +201,55 @@ const possibles42 = [...rule42.PossibleStrings]; // clone
 
 // can I just use permutePossibles???
 
-const maxLoops = 2; // guess!!! Careful, this quickly gets out of control!
+let maxLoops = 2; // guess!!! Careful, this quickly gets out of control!
 let looped = 0;
 
+const possibles8 = [[...rule8.PossibleStrings]];
 do {
-    const possibles8 = [...rule8.PossibleStrings];
-    rule8.PossibleStrings.push(rule8._permutePossibles([possibles42, possibles8]));
+    possibles8.push(rule8._permutePossibles(
+        [
+            possibles8[possibles8.length - 1],
+            possibles42
+        ])
+    );
     looped++;
 } while (looped < maxLoops);
+rule8.PossibleStrings = possibles8.flat();
 
 // Rule 11: [all possibles for 42] [all possibles for 42] [all possibles for 42] ... [all possibles for 31] [all possibles for 31] [all possibles for 31]
 // So start with 42 31 (existing possibles) and then start prepending, appending combinations of 42 and 31
 
+maxLoops = 1;
+looped = 0;
+const possibles11 = [[...rule11.PossibleStrings]];
+do {
+    // permute 42 11
+    const poss_41_11 = rule11._permutePossibles(
+        [
+            possibles42,
+            possibles11[possibles11.length - 1]
+        ]).flat();
+
+    possibles11.push(rule11._permutePossibles(
+        [
+            poss_41_11,
+            possibles31
+        ])
+    );
+    looped++;
+} while (looped < maxLoops);
+rule11.PossibleStrings = possibles11.flat();
+
+//reset 0
+rules.get(0).PossibleStrings = false;
 
 const part2 = messages.filter(message => {
-    //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.
-    return rules.get(0).getPossible().includes(message);
+    //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.    
+    const isValid = rules.get(0).getPossible().includes(message);
+    if (isValid) console.log(message);
+    return isValid;
+
+
 }).length;
 
 console.log(`Year 2020 Day 19 Part 2 Solution: ${part2}`);
