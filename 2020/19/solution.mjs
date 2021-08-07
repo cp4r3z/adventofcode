@@ -21,7 +21,8 @@ class Rule {
         this.RuleString = strRule;
         this.SubRules = arrSubs;
         this.IsLeaf = arrSubs.length === 0;
-        this.PossibleStrings = [];
+        this.PossibleStrings = false;
+        if (this.IsLeaf) this.PossibleStrings = [this.RuleString];
     }
 
     run(str) {
@@ -56,27 +57,31 @@ class Rule {
         return workStr; // But we don't know which rule was the best.
     }
 
+    // Get complete list of all possible strings
     getPossible() {
-        if (this.IsLeaf) {
-            return [this.RuleString];
-        }
+        
+        // Note: If this.IsLeaf, PossibleStrings is already an array of the value ['a'] for example
+
+        if (this.PossibleStrings) return this.PossibleStrings; // Don't Repeat Yourself
+
         let subruleResults = this.SubRules.map(rules => {
 
+            // 2D Array of arrays of possible strings
             const rulesPossibles = rules.map(rule => rule.getPossible());
 
+            // Flatten to array of possible strings
             const possibles = this._permutePossibles(rulesPossibles);
 
             return possibles;
-            //rulesPossibles.
-
-            //const subrulePossibles = subrule.getPossible(); // this is an array
-
-
+          
         });
 
-        return subruleResults.flat();
+        this.PossibleStrings = subruleResults.flat();
+        return this.PossibleStrings;
+        //TODO: For debugging it might be nice to return the rule number too
     }
 
+    // Builds up all combinations of an array or arrays, but in the order of the parent array.
     _permutePossibles(arrOfArrs) {
         let possibles = [''];
         arrOfArrs.forEach(arr => {
@@ -89,168 +94,6 @@ class Rule {
                 .flat();
         });
         return possibles;
-    }
-
-    // takes array of strings (partial possibilties)
-    // must always return a flat array of strings
-    getPossibilitiesOld(arrayFrom) {
-
-        // remember you're IN a rule
-
-        if (this.IsLeaf) {
-            // add this.RuleString to all and return
-            return arrayFrom.map(str => str + this.RuleString);
-        }
-
-        const arrayMore = arrayFrom.map(str => {
-
-            // each subrule contains rules, but the subrules are independent (parallel)
-            const arrSubRulesPossibilities = this.SubRules.map(rules => {
-                // now apply these rules one after the other (serial)
-
-                let subrulesMapResult = [str]; // always start with the str
-
-                rules.forEach(rule => {
-                    const arrayRules = rule.getPossibilities(subrulesMapResult); // These get added to each of the current possibilites in accArr
-                    // let nextAccArr = [];
-                    // accArr.forEach(str => {
-                    //     arrayRules.forEach(str2 => {
-                    //         nextAccArr.push(str + str2);
-                    //     });
-                    // });
-                    subrulesMapResult = subrulesMapResult.map(resStr => {
-                        const resPlusRules = [];
-                        arrayRules.forEach(arrayRulesStr => {
-                            resPlusRules.push(resStr + arrayRulesStr);
-                            return resPlusRules.flat();
-                        });
-                    });
-
-                });
-
-                return subrulesMapResult;
-
-                // const nextStr = rules.reduce((accArr, rule) => {
-
-                //     //accArr = accumulated array of possibilities
-
-                //     const arrayRules = rule.getPossibilities(accArr); // These get added to each of the current possibilites in accArr
-
-                //     let nextAccArr = [];
-                //     accArr.forEach(str => {
-                //         arrayRules.forEach(str2 => {
-                //             nextAccArr.push(str + str2);
-                //         });
-                //     });
-                //     return nextAccArr;
-
-                // }, [str]);
-                // return nextStr;
-
-            });
-            return arrSubRulesPossibilities; // just return it up top?
-
-
-            // returns an array (even if it's just one?)
-
-        });
-
-        // return arrayMore (flattened with .flat)
-        return arrayMore.flat();
-    }
-
-    build3() {
-        this.PossibleStrings = this.getPossibilitiesOld(['']);
-    }
-
-    build4() {
-        this.PossibleStrings = this.getPossible();
-        return this.PossibleStrings; // there might be better logic. like if possibilities exist, just return that.
-    }
-
-    // complete list of possible strings
-
-    build(str = '', nextRules = [], rulesFollowed = []) {
-        const nextRulesFollowed = JSON.parse(JSON.stringify(rulesFollowed));
-        nextRulesFollowed.push(this.Key);
-
-        if (this.IsLeaf) {
-            const newStr = str += this.RuleString;
-
-            if (nextRules.length === 0) {
-                // we're at an end!
-                console.log(`${newStr} ... ${nextRulesFollowed} `);
-                return;
-            } else {
-                // const nextRule2 = nextRules[0];
-                // const nextRules2 = nextRules.slice(1, nextRules.length );
-                nextRules[0].build(newStr, nextRules.slice(1, nextRules.length), nextRulesFollowed);
-            }
-        }
-
-        // Not a leaf
-
-        for (let si = 0; si < this.SubRules.length; si++) { // OR
-
-            const rules = this.SubRules[si];
-
-            // const nextRule = rules[0];
-            // const nextRules = rules.slice(1, rules.length);
-
-            rules[0].build(
-                str,
-                nextRules.concat(rules.slice(1, rules.length)), // !!! Or should it be the other way around?
-                nextRulesFollowed
-            );
-        }
-
-    }
-
-
-    buildold(possibleStringsPtr, str = '', isEnd = true) {
-
-        if (this.IsLeaf) {
-            //return possibles.map(p => p += this.RuleString);
-            if (!this.RuleString) {
-                console.error('no rulestring??');
-            }
-            return this.RuleString;
-        }
-
-        //let morePossibles = [];
-
-        for (let si = 0; si < this.SubRules.length; si++) {
-            //let possibleSub = JSON.parse(JSON.stringify(possibles));    
-
-            let workStr = str;
-
-            const rules = this.SubRules[si];
-
-            for (let ri = 0; ri < rules.length; ri++) {
-                const rule = rules[ri];
-
-                const test = rule.build(possibleStringsPtr, workStr, ri === rules.length - 1);
-                if (!test) {
-                    console.error('no build?');
-                }
-                workStr += rule.build(possibleStringsPtr, workStr, ri === rules.length - 1);
-            }
-
-            if (isEnd) {
-                //morePossibles.push(possibleSub);
-                possibleStringsPtr.push(workStr);
-            } else {
-                return workStr;
-            }
-
-        }
-
-
-        // if (depth === 0) {
-        //     this.PossibleStrings.push(morePossibles);
-        // } else {
-        //     return morePossibles;
-        // }
     }
 }
 
@@ -320,16 +163,12 @@ const test2 = rules.get(0).run('abbbab'); // good
 const test3 = rules.get(0).run('aaabbb');
 const test4 = rules.get(0).run('aaaabbb');
 
-const rule42 = rules.get(42);
-//rule42.build();
-rule42.build4();
-
-
-//rules.get(42).build(possible31);
-
+const rule0 = rules.get(0);
+rule0.getPossible();
 
 const part1 = messages.filter(message => {
-    return rules.get(0).run(message).length === 0;
+    //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.
+    return rules.get(0).getPossible().includes(message);
 }).length;
 
 console.log(`Year 2020 Day 19 Part 1 Solution: ${part1}`);
