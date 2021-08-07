@@ -5,7 +5,7 @@
 import { multiLine } from '../../common/parser.mjs';
 
 // Parse Input
-const inputFilePath = new URL('./input.txt', import.meta.url);
+const inputFilePath = new URL('./t2input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 class Rule {
@@ -59,7 +59,7 @@ class Rule {
 
     // Get complete list of all possible strings
     getPossible() {
-        
+
         // Note: If this.IsLeaf, PossibleStrings is already an array of the value ['a'] for example
 
         if (this.PossibleStrings) return this.PossibleStrings; // Don't Repeat Yourself
@@ -73,7 +73,7 @@ class Rule {
             const possibles = this._permutePossibles(rulesPossibles);
 
             return possibles;
-          
+
         });
 
         this.PossibleStrings = subruleResults.flat();
@@ -157,18 +157,41 @@ rules.forEach(rule => {
     rule.SubRules = ptrSubRules;
 });
 
-const test0 = rules.get(0).run('ababbb'); // good
-const test1 = rules.get(0).run('bababa');
-const test2 = rules.get(0).run('abbbab'); // good
-const test3 = rules.get(0).run('aaabbb');
-const test4 = rules.get(0).run('aaaabbb');
-
-const rule0 = rules.get(0);
-rule0.getPossible();
-
+// There are a couple ways to solve Part 1, using Rule.run() and Rule.getPossible()
 const part1 = messages.filter(message => {
     //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.
     return rules.get(0).getPossible().includes(message);
 }).length;
 
 console.log(`Year 2020 Day 19 Part 1 Solution: ${part1}`);
+
+// Part 2
+// Modify rules 8 and 11
+
+const rule8 = rules.get(8);
+const rule11 = rules.get(11);
+const rule31 = rules.get(31);
+const rule42 = rules.get(42);
+
+const rule8New = {
+    strRule: '42 | 42 8',
+    arrSubs: [[rule42], [rule42, rule8]] // Loops!
+};
+rule8.RuleString = rule8New.strRule;
+rule8.SubRules = rule8New.arrSubs;
+
+const rule11New = {
+    strRule: '42 31 | 42 11 31',
+    arrSubs: [[rule42, rule31], [rule42, rule11, rule31]] // Loops!
+};
+rule11.RuleString = rule11New.strRule;
+rule11.SubRules = rule11New.arrSubs;
+
+// Redo possible strings, but maybe not using recursion
+
+// Rule 8 : just take existing possibles for 42, and start repeating them.
+
+// Rule 11: [all possibles for 42] [all possibles for 42] [all possibles for 42] ... [all possibles for 31] [all possibles for 31] [all possibles for 31]
+// So start with 42 31 (existing possibles) and then start prepending, appending combinations of 42 and 31
+
+console.log(`Year 2020 Day 19 Part 2 Solution: ${part2}`);
