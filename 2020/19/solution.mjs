@@ -172,6 +172,7 @@ const rule31 = rules.get(31);
 const rule42 = rules.get(42);
 
 //#region Not Necessary
+/*
 
 const rule8 = rules.get(8);
 const rule11 = rules.get(11);
@@ -189,7 +190,7 @@ const rule11New = {
 };
 rule11.RuleString = rule11New.strRule;
 rule11.SubRules = rule11New.arrSubs;
-//#endregion
+
 
 // Redo possible strings, but maybe not using recursion
 // Actually, we might not have had to do the above changes.
@@ -243,12 +244,23 @@ rule11.PossibleStrings = possibles11.flat();
 //reset 0
 rules.get(0).PossibleStrings = false;
 
+*/
+//#endregion
+
+const rule3142Length = rule31.PossibleStrings[0].length;
+const rule3142Length2 = rule42.PossibleStrings[0].length;
+
 const part2 = messages.filter(message => {
     //return rules.get(0).run(message).length === 0; // This is much faster, but more complicated.    
     const isValid = rules.get(0).getPossible().includes(message);
-    if (isValid) console.log(message);
-    return isValid;
+    if (isValid) return true;
 
+    let workingMessage = message; // pass by value
+
+    // trim rule31 from end... but then you MUST trim rule42 from beginning
+
+
+    // then trim rule42 from beginning until the message is ''
 
 }).length;
 
