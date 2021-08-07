@@ -56,25 +56,39 @@ class Rule {
         return workStr; // But we don't know which rule was the best.
     }
 
-    
+
     // takes array of strings (partial possibilties)
-    getPossibilites(arrayFrom){
+    getPossibilities(arrayFrom) {
 
         // remember you're IN a rule
 
         if (this.IsLeaf) {
-           // add this.RuleString to all and return
-           return arrayFrom.map(str=>str+this.RuleString);
+            // add this.RuleString to all and return
+            return arrayFrom.map(str => str + this.RuleString);
         }
 
-        const arrayMore = arrayFrom.map(str=>{
-            
+        const arrayMore = arrayFrom.map(str => {
+
             // each subrule contains rules, but the subrules are independent (parallel)
-            const arrSubRulesPossibilities = this.SubRules.map(rules=>{
+            const arrSubRulesPossibilities = this.SubRules.map(rules => {
                 // now apply these rules one after the other (serial)
-                const nextStr =  rules.reduce((accStr,rule)=>{
-                    return accStr+rule.getPossibilites([str]); // hmmm
-                },str);
+
+
+                const nextStr = rules.reduce((accArr, rule) => {
+
+                    //accArr = accumulated array of possibilities
+
+                    const arrayRules = rule.getPossibilities(accArr); // These get added to each of the current possibilites in accArr
+
+                    let nextAccArr = [];
+                    accArr.forEach(str => {
+                        arrayRules.forEach(str2 => {
+                            nextAccArr.push(str + str2);
+                        });
+                    });
+                    return nextAccArr;
+
+                }, [str]);
                 return nextStr;
             });
             return arrSubRulesPossibilities; // just return it up top?
@@ -85,8 +99,13 @@ class Rule {
         });
 
         // return arrayMore (flattened with .flat)
+        return arrayMore.flat();
     }
-    
+
+    build3(){
+        this.PossibleStrings = this.getPossibilities(['']);
+    }
+
     // complete list of possible strings
 
     build(str = '', nextRules = [], rulesFollowed = []) {
@@ -240,7 +259,8 @@ const test3 = rules.get(0).run('aaabbb');
 const test4 = rules.get(0).run('aaaabbb');
 
 const rule42 = rules.get(42);
-rule42.build();
+//rule42.build();
+rule42.build3();
 
 
 //rules.get(42).build(possible31);
