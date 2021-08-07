@@ -56,9 +56,44 @@ class Rule {
         return workStr; // But we don't know which rule was the best.
     }
 
+    getPossible() {
+        if (this.IsLeaf) {
+            return [this.RuleString];
+        }
+        let subruleResults = this.SubRules.map(rules => {
+
+            const rulesPossibles = rules.map(rule => rule.getPossible());
+
+            const possibles = this._permutePossibles(rulesPossibles);
+
+            return possibles;
+            //rulesPossibles.
+
+            //const subrulePossibles = subrule.getPossible(); // this is an array
+
+
+        });
+
+        return subruleResults.flat();
+    }
+
+    _permutePossibles(arrOfArrs) {
+        let possibles = [''];
+        arrOfArrs.forEach(arr => {
+            possibles = possibles
+                .map(p1 => {
+                    return arr.map(p2 => {
+                        return p1 + p2;
+                    });
+                })
+                .flat();
+        });
+        return possibles;
+    }
 
     // takes array of strings (partial possibilties)
-    getPossibilities(arrayFrom) {
+    // must always return a flat array of strings
+    getPossibilitiesOld(arrayFrom) {
 
         // remember you're IN a rule
 
@@ -73,23 +108,45 @@ class Rule {
             const arrSubRulesPossibilities = this.SubRules.map(rules => {
                 // now apply these rules one after the other (serial)
 
+                let subrulesMapResult = [str]; // always start with the str
 
-                const nextStr = rules.reduce((accArr, rule) => {
-
-                    //accArr = accumulated array of possibilities
-
-                    const arrayRules = rule.getPossibilities(accArr); // These get added to each of the current possibilites in accArr
-
-                    let nextAccArr = [];
-                    accArr.forEach(str => {
-                        arrayRules.forEach(str2 => {
-                            nextAccArr.push(str + str2);
+                rules.forEach(rule => {
+                    const arrayRules = rule.getPossibilities(subrulesMapResult); // These get added to each of the current possibilites in accArr
+                    // let nextAccArr = [];
+                    // accArr.forEach(str => {
+                    //     arrayRules.forEach(str2 => {
+                    //         nextAccArr.push(str + str2);
+                    //     });
+                    // });
+                    subrulesMapResult = subrulesMapResult.map(resStr => {
+                        const resPlusRules = [];
+                        arrayRules.forEach(arrayRulesStr => {
+                            resPlusRules.push(resStr + arrayRulesStr);
+                            return resPlusRules.flat();
                         });
                     });
-                    return nextAccArr;
 
-                }, [str]);
-                return nextStr;
+                });
+
+                return subrulesMapResult;
+
+                // const nextStr = rules.reduce((accArr, rule) => {
+
+                //     //accArr = accumulated array of possibilities
+
+                //     const arrayRules = rule.getPossibilities(accArr); // These get added to each of the current possibilites in accArr
+
+                //     let nextAccArr = [];
+                //     accArr.forEach(str => {
+                //         arrayRules.forEach(str2 => {
+                //             nextAccArr.push(str + str2);
+                //         });
+                //     });
+                //     return nextAccArr;
+
+                // }, [str]);
+                // return nextStr;
+
             });
             return arrSubRulesPossibilities; // just return it up top?
 
@@ -102,8 +159,13 @@ class Rule {
         return arrayMore.flat();
     }
 
-    build3(){
-        this.PossibleStrings = this.getPossibilities(['']);
+    build3() {
+        this.PossibleStrings = this.getPossibilitiesOld(['']);
+    }
+
+    build4() {
+        this.PossibleStrings = this.getPossible();
+        return this.PossibleStrings; // there might be better logic. like if possibilities exist, just return that.
     }
 
     // complete list of possible strings
@@ -260,7 +322,7 @@ const test4 = rules.get(0).run('aaaabbb');
 
 const rule42 = rules.get(42);
 //rule42.build();
-rule42.build3();
+rule42.build4();
 
 
 //rules.get(42).build(possible31);
