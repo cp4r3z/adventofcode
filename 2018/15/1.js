@@ -1,5 +1,5 @@
 /**
- * https://adventofcode.com/2018/day/8
+ * https://adventofcode.com/2018/day/15
  */
 
 const _ = require('underscore');
@@ -13,7 +13,7 @@ let arrInput = file.split('\n').map(row => row.split(''));
 const xy = {
     min: 0,
     max: arrInput.length - 1
-}
+};
 
 // Generate Square Array
 let arrSquares = [];
@@ -38,6 +38,7 @@ update arrSquares with new locations
 */
 
 
+// not a factory really is it?
 // _position expects sym, x, y
 function squareFactory(_position) {
     if (_position.sym === '#') return null;
