@@ -7,43 +7,47 @@ export default class SSD {
 
     Solve() {
         // TODO: DRY up ?
-        this.eliminate1();
-        this.eliminate4();
-        this.eliminate7();
-        this.eliminate8();
-        this.eliminate235();
-        this.eliminate069();
+        this.solve1();
+        this.solve4();
+        this.solve7();
+        this.solve8();
+        this.solve235();
+        this.solve069();
 
         // For verification
         const solved = this.SolvedSignals.map(SSD.BinaryToSignal);
     }
 
-    eliminate1() {
+    GetOutputDigit(signal){
+        return this.SolvedSignals.findIndex(s=> SSD.SignalToBinary(signal)===s);
+    }
+
+    solve1() {
         this.SolvedSignals[1] = SSD.SignalToBinary(
             this.Signals.find(s => s.length === 2)
         );
     }
 
-    eliminate4() {
+    solve4() {
         this.SolvedSignals[4] = SSD.SignalToBinary(
             this.Signals.find(s => s.length === 4)
         );
 
     }
 
-    eliminate7() {
+    solve7() {
         this.SolvedSignals[7] = SSD.SignalToBinary(
             this.Signals.find(s => s.length === 3)
         );
     }
 
-    eliminate8() {
+    solve8() {
         this.SolvedSignals[8] = SSD.SignalToBinary(
             this.Signals.find(s => s.length === 7)
         );
     }
 
-    eliminate235() {
+    solve235() {
         //find all 5 length and convert to binary
         let s5 = this.Signals
             .filter(s => s.length === 5)
@@ -83,7 +87,7 @@ export default class SSD {
         this.SolvedSignals[2] = SSD.SignalToBinary(s25[1].original);
     }
 
-    eliminate069() {
+    solve069() {
         //there is a 5 in both 6 and 9 but not 0
         let s6 = this.Signals
             .filter(s => s.length === 6)

@@ -11,7 +11,7 @@ import { multiLine } from '../../common/parser.mjs';
 import SSD from './SSD.mjs';
 
 // Parse Input
-let inputFilePath = new URL('./tinput1.txt', import.meta.url);
+let inputFilePath = new URL('./input.txt', import.meta.url);
 const arrInput = multiLine.toStrArray(inputFilePath);
 
 // Part 1
@@ -33,13 +33,20 @@ console.log(`\nYear 2021 Day 08 Part 1 Solution: ${part1}`);
 
 // Part 2
 
-let test = tests[0]; //for now
-let display = new SSD(test.signals);
-display.Solve();
+const part2 = tests
+    .map(test => {
+        let display = new SSD(test.signals);
+        display.Solve();
+        const output = parseInt(
+            test.outputs
+                .map(o => display.GetOutputDigit(o))
+                .join('')
+        );
+        return output;
+    })
+    .reduce((total, cur) => total + cur, 0);
 
-
-console.log(`\nYear 2021 Day 08 Part 2 Solution: ${part1}`);
-
+console.log(`\nYear 2021 Day 08 Part 2 Solution: ${part2}`);
 
 // End Process (gracefully)
 process.exit(0);
