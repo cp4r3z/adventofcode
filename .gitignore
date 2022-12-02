@@ -4,3 +4,4 @@ settings.json
 .idea/
 .vscode/
 *.pdb
+input.js
