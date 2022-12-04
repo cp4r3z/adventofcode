@@ -1,0 +1,3 @@
+[submodule "common/mdn-webgl"]
+	path = common/mdn-webgl
+	url = https://github.com/gregtatum/mdn-webgl.git
