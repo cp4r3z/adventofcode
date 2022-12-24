@@ -20,10 +20,12 @@ class Shape {
         this.MinX = 0;
         this.MaxX = 0;
         this.MinY = 0;
-        this.MaxY = 0; //??
-        this.Coors = []; // [<Coor>]        
+        this.MaxY = 0;
+        this.Coors = []; // [<Coor>]    
+
+        // position on board
         this.OffsetX = 0;
-        this.OffsetY = 0; // position on board
+        this.OffsetY = 0;
     }
 
     AddCoor(coor) {
@@ -127,6 +129,12 @@ function SetRock(coor) {
     if (coor.y > aoc.map.highestRock) {
         aoc.map.highestRock = coor.y;
     }
+
+    // Part 2
+    if (coor.y > aoc.map.highestRocks[coor.x]) {
+        aoc.map.highestRocks[coor.x] = coor.y;
+    }
+
 }
 
 function SetShape(shape) {
@@ -157,6 +165,9 @@ function Setup() {
     aoc.map = aoc.grid2D({}, '.');
     aoc.map.highestRock = 0;
 
+    aoc.map.highestRocks = new Array(7).fill(0);
+    aoc.hashMap = new Map();
+
     MakeFloor();
 
     DeclareShapes();
@@ -166,7 +177,14 @@ function Setup() {
 
 }
 
-function Simulate() {
+function GetHash(shapeId, jetIndex) {
+    var hash = `${shapeId}|${jetIndex}|`;
+    var relativeHighestHash = aoc.map.highestRocks.map(h => aoc.map.highestRock - h).join('|');
+    hash += relativeHighestHash;
+    return hash;
+}
+
+function Simulate(part2 = false) {
     var stoppedRocks = 0;
 
     var shapeId = 0;
@@ -174,9 +192,13 @@ function Simulate() {
     PlaceShapeInGrid(shape);
 
     var jetIndex = 0;
-    
 
-    while (stoppedRocks < 2022) {
+    const maxRocks = !part2 ? 2022 : 1000000000000;
+
+    var part2AdditionalHeight = 0;
+    var part2Skipped = false;
+
+    while (stoppedRocks < maxRocks) {
         // jets
         var jet = aoc.jets[jetIndex];
 
@@ -193,8 +215,8 @@ function Simulate() {
         }
 
         jetIndex++;
-        if (jetIndex>aoc.jets.length-1){
-            jetIndex=0;
+        if (jetIndex > aoc.jets.length - 1) {
+            jetIndex = 0;
         }
 
         // down
@@ -203,8 +225,8 @@ function Simulate() {
         if (DetectCollision(shape)) {
             shape.U();
             SetShape(shape);
-            stoppedRocks ++;
-            if (stoppedRocks===2022){
+            stoppedRocks++;
+            if (stoppedRocks === maxRocks) {
                 break;
             }
 
@@ -217,6 +239,37 @@ function Simulate() {
             }
             shape = aoc.Shapes[shapeId];
             PlaceShapeInGrid(shape);
+
+            // Part 2
+
+            if (part2) {
+                // Before we do anything, have we been here before?
+                var hash = GetHash(shapeId, jetIndex);
+
+                var check = aoc.hashMap.get(hash);
+
+                if (check && !part2Skipped) {
+                    // so... it repeats at this interval...
+                    const cycle = stoppedRocks - check.stoppedRocks;
+                    const remaining = maxRocks - stoppedRocks;
+                    const remainderToSimulate = remaining % cycle;
+                    const cycles = Math.floor(remaining / cycle);
+                    const test = stoppedRocks + cycles * cycle + remainderToSimulate; // should be maxRocks?
+
+                    stoppedRocks = maxRocks - remainderToSimulate;
+
+                    const heightPerCycle = aoc.map.highestRock - check.highestRock;
+                    part2AdditionalHeight = heightPerCycle * cycles;
+                    part2Skipped = true;
+
+                } else {
+                    const store = {
+                        stoppedRocks, highestRock: aoc.map.highestRock
+                    }
+                    aoc.hashMap.set(hash, store);
+                }
+            }
+
         }
 
         //debug
@@ -234,6 +287,8 @@ function Simulate() {
         */
 
     }
+
+    aoc.map.highestRock += part2AdditionalHeight;
 }
 
 // Part 1
@@ -242,6 +297,12 @@ Setup();
 Simulate();
 
 aoc.part1 = aoc.map.highestRock;
+
+Setup();
+
+Simulate(true);
+
+aoc.part2 = aoc.map.highestRock;
 
 document.getElementById("part1-result").innerText = `${aoc.part1}`;
 document.getElementById("part2-result").innerText = `${aoc.part2}`;
