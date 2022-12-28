@@ -151,6 +151,8 @@ function PathFinding() {
     steps.push(new Coor(1, 1));
     let nextSteps = [];
 
+    // Note: steps and nextSteps should have been Sets
+
     let stepsTaken = 0;
     let thereYet = false;
 
