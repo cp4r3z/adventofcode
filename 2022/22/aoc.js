@@ -1,16 +1,6 @@
 // Testing
 //aoc.input = aoc.inputt;
 
-class Coor {
-    constructor(x = 0, y = 0) {
-        this.x = x;
-        this.y = y;
-    }
-    Add(coor) {
-        return new Coor(this.x + coor.x, this.y + coor.y);
-    }
-}
-
 aoc.Directions = [
     new Coor(1, 0),  // R
     new Coor(0, 1),  // D
@@ -26,9 +16,17 @@ class Square {
 
         // maybe store links? LURD
         this.SL = null;
+        this.SLSide = null;
+        this.SLFlip = false;
         this.SU = null;
+        this.SUSide = null;
+        this.SUFlip = false;
         this.SR = null;
+        this.SRSide = null;
+        this.SRFlip = false;
         this.SD = null;
+        this.SDSide = null;
+        this.SDFlip = false;
 
         // Default to 0,0 facing right
         this.Position = new Coor();
@@ -72,7 +70,7 @@ class Square {
         // Rotate
 
         if (move.rotation !== 0) {
-            this.Rotate(move.rotation);            
+            this.Rotate(move.rotation);
             return this;
         }
 
@@ -83,21 +81,56 @@ class Square {
         // Check if it's another square...
 
         let nextSquare = this;
+        let p2 = {};
         if (nextPosition.x < 0) {
             nextSquare = this.SL;
-            nextPosition = new Coor(aoc.input.size - 1, nextPosition.y);
+
+            // If part 2, do the transform
+            if (aoc.part2cube) {
+                p2 = aoc.part2cube.PlaceInPosition(this.Position.y, this.SLSide, this.SLFlip);
+                nextPosition = p2.position;
+                nextSquare.DirectionIndex = p2.direction;
+            } else {
+                nextPosition = new Coor(aoc.input.size - 1, nextPosition.y);    
+            }
+
         } else if (nextPosition.y < 0) {
             nextSquare = this.SU;
-            nextPosition = new Coor(nextPosition.x, aoc.input.size - 1);
+
+            if (aoc.part2cube) {
+                p2 = aoc.part2cube.PlaceInPosition(this.Position.x, this.SUSide, this.SUFlip);
+                nextPosition = p2.position;
+                nextSquare.DirectionIndex = p2.direction;
+            } else {
+                nextPosition = new Coor(nextPosition.x, aoc.input.size - 1);            
+            }
+
         } else if (nextPosition.x > aoc.input.size - 1) {
             nextSquare = this.SR;
-            nextPosition = new Coor(0, nextPosition.y);
+
+            if (aoc.part2cube) {
+                p2 = aoc.part2cube.PlaceInPosition(this.Position.y, this.SRSide, this.SRFlip);
+                nextPosition = p2.position;
+                nextSquare.DirectionIndex = p2.direction;
+            } else {
+                nextPosition = new Coor(0, nextPosition.y);
+            }
+
         } else if (nextPosition.y > aoc.input.size - 1) {
             nextSquare = this.SD;
-            nextPosition = new Coor(nextPosition.x, 0);
+
+            if (aoc.part2cube) {
+                p2 = aoc.part2cube.PlaceInPosition(this.Position.x, this.SDSide, this.SDFlip);
+                nextPosition = p2.position;
+                nextSquare.DirectionIndex = p2.direction;
+            } else {
+                nextPosition = new Coor(nextPosition.x, 0);
+            }
         }
 
-        nextSquare.DirectionIndex = this.DirectionIndex;
+        if (!aoc.part2cube) {
+            nextSquare.DirectionIndex = this.DirectionIndex;
+        }
 
         // check if it's blocked...
 
@@ -152,7 +185,7 @@ function ParsePath() {
         if (char === "L") {
             path.push({
                 distance: parseInt(number),
-                rotation:0
+                rotation: 0
             });
             rotation = -1;
             number = "";
@@ -163,7 +196,7 @@ function ParsePath() {
         } else if (char === "R") {
             path.push({
                 distance: parseInt(number),
-                rotation:0
+                rotation: 0
             });
             rotation = 1;
             number = "";
@@ -176,7 +209,7 @@ function ParsePath() {
             rotation = 0;
         }
     }
-    if (number.length>0){
+    if (number.length > 0) {
         path.push({
             distance: parseInt(number),
             rotation: 0
@@ -321,6 +354,46 @@ function LinkSquares() {
     }
 }
 
+function LinkSquares2() {
+    // Figure out number of squares in each row / column?
+    for (const square of Object.values(aoc.squares.grid)) {
+
+        // const sides = [0, 1, 2, 3]; // R, D, L, U
+
+        // Right
+        const r = aoc.edgeTransform.get(
+            JSON.stringify({ s: square.value.SquareCoor, side: 0 })
+        );
+        square.value.SR = aoc.squares.get(r.s.x, r.s.y).value;
+        square.value.SRSide = r.side;
+        square.value.SRFlip = r.flip;
+
+        // Down
+        const d = aoc.edgeTransform.get(
+            JSON.stringify({ s: square.value.SquareCoor, side: 1 })
+        );
+        square.value.SD = aoc.squares.get(d.s.x, d.s.y).value;
+        square.value.SDSide = d.side;
+        square.value.SDFlip = d.flip;
+
+        // Left
+        const l = aoc.edgeTransform.get(
+            JSON.stringify({ s: square.value.SquareCoor, side: 2 })
+        );
+        square.value.SL = aoc.squares.get(l.s.x, l.s.y).value;
+        square.value.SLSide = l.side;
+        square.value.SLFlip = l.flip;
+
+        // Up
+        const u = aoc.edgeTransform.get(
+            JSON.stringify({ s: square.value.SquareCoor, side: 3 })
+        );
+        square.value.SU = aoc.squares.get(u.s.x, u.s.y).value;
+        square.value.SUSide = u.side;
+        square.value.SUFlip = u.flip;
+    }
+}
+
 function GetStartingSquare() {
     let square = false;
     let x = 0;
@@ -334,9 +407,17 @@ function GetStartingSquare() {
 function MoveAlongPath() {
     let square = GetStartingSquare();
     for (const move of aoc.path) {
-        square = square.Move(move);        
+        square = square.Move(move);
     }
     return square;
+}
+
+function ResetSquares() {
+    for (const square of Object.values(aoc.squares.grid)) {
+        square.value.SetDefaultLinks();
+        square.value.Position = new Coor(0,0);
+        square.value.DirectionIndex = 0;
+    }
 }
 
 Parse();
@@ -345,6 +426,13 @@ FillSquares();
 LinkSquares();
 aoc.finalSquare = MoveAlongPath();
 aoc.part1 = aoc.finalSquare.GetPassword();
+
+aoc.part2cube = aoc.cube(aoc.input.size);
+ResetSquares();
+LinkSquares2();
+
+aoc.finalSquare = MoveAlongPath();
+aoc.part2 = aoc.finalSquare.GetPassword();
 
 document.getElementById("part1-result").innerText = `${aoc.part1}`;
 document.getElementById("part2-result").innerText = `${aoc.part2}`;
