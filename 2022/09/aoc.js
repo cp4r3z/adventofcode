@@ -22,7 +22,7 @@ class RopePart {
         this.pos.x += dx;
         this.pos.y += dy;
         this.grid.set(this.pos.x, this.pos.y, "#");
-        this.next?.Update();
+        this.next.Update();
     }
 
     Update() {
