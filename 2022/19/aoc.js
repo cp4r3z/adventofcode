@@ -1,6 +1,7 @@
 // Testing
-aoc.input = aoc.inputt;
+//aoc.input = aoc.inputt;
 
+// "Enum-like" frozen object
 const Mineral = Object.freeze({
     Clay: "Clay",
     Geode: "Geode",
@@ -8,6 +9,7 @@ const Mineral = Object.freeze({
     Ore: "Ore",
 });
 
+// It would have been very useful to create a useful forEach Object extension...
 function MineralObject(fromObject = {}) {
     const mineralObject = {
         [Mineral.Clay]: fromObject[Mineral.Clay] || 0,
@@ -16,43 +18,10 @@ function MineralObject(fromObject = {}) {
         [Mineral.Ore]: fromObject[Mineral.Ore] || 0
     };
 
-    // if (fromObject) {
-    //     mineralObject[Mineral.Clay] = fromObject[Mineral.Clay];
-    //     mineralObject[Mineral.Geode] = fromObject[Mineral.Geode];
-    //     mineralObject[Mineral.Obsidian] = fromObject[Mineral.Obsidian];
-    //     mineralObject[Mineral.Ore] = fromObject[Mineral.Ore];
-    // }
-
     return mineralObject;
 }
 
-// class Robot {
-//     constructor(type) {
-//         this.type = type; // research how to extend classes in JS
-//         //this.costs = BlueprintCosts(type);
-//     }
-// }
-
-// class RobotOre extends Robot {
-//     constructor() {
-//         super(Mineral.Ore);
-//     }
-// }
-
 class State {
-    /**
- * state is a class? needs a clone method
- * mineral amounts
- * robot amounts
- * minute
- * 
- * every minute, you decide to make 1 of the 4  
- */
-    // constructor(){
-    //     this.minerals = MineralObject();
-    //     this.robots = { [Mineral.Ore]: 1 };
-    //     this.minute = 0;
-    // }
 
     constructor(state) {
         if (!state) {
@@ -126,90 +95,88 @@ function AvailableRobots(blueprint, minerals) {
     return available;
 }
 
-function SortAvailable(available, robots) {
+// While this reduces the time by ~30%, the "FindPotential" pruning below is much more useful.
+function SortAvailable(available, state) {
 
-    let sortable = [];
-    for (var robot in robots) {
-        sortable.push([robot, robots[robot]]);
+    let priority = available.includes(Mineral.Ore) ? Mineral.Ore : "NONE";
+
+    if (available.includes(Mineral.Geode)) {
+        priority = Mineral.Geode;
+    } else if (state.minerals[Mineral.Obsidian] < aoc.Blueprint.robots[Mineral.Geode].costs[Mineral.Obsidian]
+        && available.includes(Mineral.Obsidian)) {
+        priority = Mineral.Obsidian;
+    } else if (state.minerals[Mineral.Clay] < aoc.Blueprint.robots[Mineral.Obsidian].costs[Mineral.Clay]
+        && available.includes(Mineral.Clay)) {
+        priority = Mineral.Clay;
     }
 
-
-    //sortable.push(["NONE", .5])
-
-    sortable = sortable.sort(function (a, b) {
-        return a[1] - b[1];
-    });
-
-    sortable.push(["NONE", sortable[0][1] + .5]);
-
-    sortable = sortable.sort(function (a, b) {
-        return a[1] - b[1];
-    });
-
-    sortable = sortable.map(r => r[0]);
-
-    //sortable.push("NONE");
-
-    //const sortedRobots = [...robots].sort((a,[k,v])=>)
-
-    //console.log('ok, now sort available');
-
-    //const priority = ["NONE", Mineral.Geode, Mineral.Obsidian, Mineral.Clay, Mineral.Ore];
-
-    const prioritized = [];
-
-    for (const p of sortable) {
-        if (available.includes(p)) {
-            prioritized.push(p);
+    let sorted = [priority];
+    for (const a of available) {
+        if (!sorted.includes(a)) {
+            sorted.push(a);
         }
     }
 
-    return prioritized;
+    return sorted;
 }
 
-// Pass in a choice?
+// Branch pruning 
+function FindPotential(state) {
+
+    // Assume we can build robots EVERY DAY.
+
+    let clyRobots = state.robots[Mineral.Clay];
+    let geoRobots = state.robots[Mineral.Geode];
+    let obsRobots = state.robots[Mineral.Obsidian];
+    let oreRobots = state.robots[Mineral.Ore];
+
+    let cly = state.minerals[Mineral.Clay];
+    let geo = state.minerals[Mineral.Geode];
+    let obs = state.minerals[Mineral.Obsidian];
+    let ore = state.minerals[Mineral.Ore];
+
+    for (let minute = state.minute + 1; minute <= aoc.LastMinute; minute++) {
+
+        cly += clyRobots;
+        if (ore >= aoc.Blueprint.robots[Mineral.Clay].costs[Mineral.Ore]) {
+            clyRobots++;
+            // ore -= aoc.Blueprint.robots[Mineral.Clay].costs[Mineral.Ore];
+        }
+        geo += geoRobots;
+        if (ore >= aoc.Blueprint.robots[Mineral.Geode].costs[Mineral.Ore] &&
+            obs >= aoc.Blueprint.robots[Mineral.Geode].costs[Mineral.Obsidian]) {
+            geoRobots++;
+            ore -= aoc.Blueprint.robots[Mineral.Geode].costs[Mineral.Ore];
+            obs -= aoc.Blueprint.robots[Mineral.Geode].costs[Mineral.Obsidian];
+        }
+        obs += obsRobots;
+        if (ore >= aoc.Blueprint.robots[Mineral.Obsidian].costs[Mineral.Ore] &&
+            cly >= aoc.Blueprint.robots[Mineral.Obsidian].costs[Mineral.Clay]) {
+            obsRobots++;
+            // ore -= aoc.Blueprint.robots[Mineral.Obsidian].costs[Mineral.Ore];
+            cly -= aoc.Blueprint.robots[Mineral.Obsidian].costs[Mineral.Clay];
+        }
+        ore += oreRobots;
+        if (ore >= aoc.Blueprint.robots[Mineral.Ore].costs[Mineral.Ore]) {
+            oreRobots++;
+            // ore -= aoc.Blueprint.robots[Mineral.Ore].costs[Mineral.Ore];
+        }
+    }
+
+    return geo;
+}
 
 function Choose(choice = "NONE") {
-
-    // TODO: 
-
-    // if minute is > ended
-
-
-
-
-    //TODO:  or we can't possibly create enough geodes
 
     // Create new state
     const state = new State(aoc.StateStack[aoc.StateStack.length - 1]);
     state.minute++;
     aoc.StateStack.push(state);
 
-
-    const minutesLeft = aoc.LastMinute - state.minute;
-    const geodeRobots = state.robots[Mineral.Geode];
-    const maxGeodeRobots = geodeRobots + minutesLeft / 2;
-    const maxPotentialGeodes = state.minerals[Mineral.Geode] + maxGeodeRobots * minutesLeft;
-
-    if (maxPotentialGeodes < aoc.MostGeodes) {
-        // aoc.StateStack.pop();
-        // return;
-    }
-
-
-
-    //console.log(`Push ` +aoc.StateStack.length);
-
     // Build your choice of robots
-
     if (choice !== 'NONE') {
-        // build the robot and continue...  
-
         BuildRobot(state.minerals, aoc.Blueprint.robots[choice].costs);
     }
-
-
-
 
     // Collect    
     state.minerals[Mineral.Clay] += state.robots[Mineral.Clay];
@@ -217,57 +184,35 @@ function Choose(choice = "NONE") {
     state.minerals[Mineral.Obsidian] += state.robots[Mineral.Obsidian];
     state.minerals[Mineral.Ore] += state.robots[Mineral.Ore];
 
-    state.robots[choice]++;
+    if (choice !== 'NONE') {
+        state.robots[choice]++;
+    }
 
     if (state.minute === aoc.LastMinute) {
         if (state.minerals[Mineral.Geode] > aoc.MostGeodes) {
             aoc.MostGeodes = state.minerals[Mineral.Geode];
-            console.log(aoc.MostGeodes);
+            // console.log(aoc.MostGeodes);
         }
         aoc.StateStack.pop();
         return;
     }
 
-    if (state.minerals[Mineral.Geode] > 0 && state.minute < aoc.EarliestGeodeRobot) {
-        aoc.EarliestGeodeRobot = state.minute;
-    }
-
-    if (state.minute >= aoc.EarliestGeodeRobot && state.robots[Mineral.Geode] === 0) {
+    const maxPotentialGeodes = FindPotential(state);
+    if (maxPotentialGeodes <= aoc.MostGeodes) {
         aoc.StateStack.pop();
-        return; //?
+        return;
     }
-
-
 
     // Figure out available robots
 
     let availableRobots = AvailableRobots(aoc.Blueprint, state.minerals);
-
-    
-
-    if (state.minerals[Mineral.Geode] === 0 && aoc.EarliestGeodeRobot === aoc.LastMinute) {
-        availableRobots = SortAvailable(availableRobots, state.robots);
-      
-    }
-    // sort?
-
-
-
-    //const backupMinerals = MineralObject(state.minerals);
-    //const backupMinute = state.minute;
+    availableRobots = SortAvailable(availableRobots, state);
 
     for (const choice of availableRobots) {
-        // state.minerals = MineralObject(backupMinerals);
-        // state.minute = backupMinute;
-
         Choose(choice);
-
     }
 
-    aoc.StateStack.pop(); // As the last thing we do?
-
-    //console.log(`Pop  ` +aoc.StateStack.length);
-
+    aoc.StateStack.pop(); // As the last thing we do
     // console.log('popped'); // yay, stack overflow
 }
 
@@ -276,44 +221,56 @@ function Setup() {
     aoc.Blueprints = aoc.input.split("\n").map(BluePrintCostParser);
 }
 
-function Run(lastMinute) {
+function Run(lastMinute, part1 = true) {
     aoc.LastMinute = lastMinute;
 
-    aoc.part1 =0;
+    let b = 1;
 
-    let b  =1;
+    let bMax = part1 ? aoc.Blueprints.length : 3;
 
     for (const blueprint of aoc.Blueprints) {
 
-        // Globabls outside of recursion
+        if (b > bMax) {
+            break;
+        }
+
+        console.log(`Blueprint ${b}`);
+
+        // Globals outside of recursion
         aoc.Blueprint = blueprint;
         aoc.StateStack = [new State()];
         aoc.MostGeodes = 0;
-        aoc.EarliestGeodeRobot = lastMinute;
+        aoc.GeodesAtMinute = new Array(lastMinute + 1).fill(0);
 
         Choose();
 
-        aoc.part1 += (b*aoc.MostGeodes);
-        b++;
+        console.log(`Most Geodes: ${aoc.MostGeodes}`);
 
+        if (part1) {
+            aoc.part1 += (b * aoc.MostGeodes)
+        } else {
+            aoc.part2 *= aoc.MostGeodes;
+        }
+
+        b++;
     }
 }
 
-// Part 1
-Setup();
+aoc.part1 = 0;
+aoc.part2 = 1;
 
+let start = Date.now();
+
+Setup();
 Run(24);
 
-// Now start thinking about the state
+Setup();
+Run(32, false);
 
-/**
- * state is a class? needs a clone method
- * mineral amounts
- * robot amounts
- * minute
- * 
- * every minute, you decide to make 1 of the 4  
- */
+let end = Date.now();
+
+// Echo the interval it took to run. For fun. Final result was ~250ms. Not bad for single threaded JS!
+console.log(`${end - start}ms`);
 
 document.getElementById("part1-result").innerText = `${aoc.part1}`;
 document.getElementById("part2-result").innerText = `${aoc.part2}`;
