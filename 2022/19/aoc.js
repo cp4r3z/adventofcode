@@ -100,35 +100,116 @@ function SufficientMinerals(minerals, costs) {
         minerals[Mineral.Ore] >= costs[Mineral.Ore]);
 }
 
+function BuildRobot(minerals, costs) {
+    minerals[Mineral.Clay] -= costs[Mineral.Clay];
+    minerals[Mineral.Geode] -= costs[Mineral.Geode];
+    minerals[Mineral.Obsidian] -= costs[Mineral.Obsidian];
+    minerals[Mineral.Ore] -= costs[Mineral.Ore];
+}
+
 function AvailableRobots(blueprint, minerals) {
-    const available = [];
+    const available = ["NONE"];
 
     if (SufficientMinerals(minerals, blueprint.robots[Mineral.Clay].costs)) {
-        available.push([Mineral.Clay]);
+        available.push(Mineral.Clay);
     }
     if (SufficientMinerals(minerals, blueprint.robots[Mineral.Geode].costs)) {
-        available.push([Mineral.Geode]);
+        available.push(Mineral.Geode);
     }
     if (SufficientMinerals(minerals, blueprint.robots[Mineral.Obsidian].costs)) {
-        available.push([Mineral.Obsidian]);
+        available.push(Mineral.Obsidian);
     }
     if (SufficientMinerals(minerals, blueprint.robots[Mineral.Ore].costs)) {
-        available.push([Mineral.Ore]);
+        available.push(Mineral.Ore);
     }
 
     return available;
 }
 
+function SortAvailable(available, robots) {
+
+    let sortable = [];
+    for (var robot in robots) {
+        sortable.push([robot, robots[robot]]);
+    }
+
+
+    //sortable.push(["NONE", .5])
+
+    sortable = sortable.sort(function (a, b) {
+        return a[1] - b[1];
+    });
+
+    sortable.push(["NONE", sortable[0][1] + .5]);
+
+    sortable = sortable.sort(function (a, b) {
+        return a[1] - b[1];
+    });
+
+    sortable = sortable.map(r => r[0]);
+
+    //sortable.push("NONE");
+
+    //const sortedRobots = [...robots].sort((a,[k,v])=>)
+
+    //console.log('ok, now sort available');
+
+    //const priority = ["NONE", Mineral.Geode, Mineral.Obsidian, Mineral.Clay, Mineral.Ore];
+
+    const prioritized = [];
+
+    for (const p of sortable) {
+        if (available.includes(p)) {
+            prioritized.push(p);
+        }
+    }
+
+    return prioritized;
+}
+
 // Pass in a choice?
 
-function Choose() {
+function Choose(choice = "NONE") {
 
-    // if we're at the finish...
+    // TODO: 
+
+    // if minute is > ended
+
+
+
 
     //TODO:  or we can't possibly create enough geodes
 
     // Create new state
     const state = new State(aoc.StateStack[aoc.StateStack.length - 1]);
+    state.minute++;
+    aoc.StateStack.push(state);
+
+
+    const minutesLeft = aoc.LastMinute - state.minute;
+    const geodeRobots = state.robots[Mineral.Geode];
+    const maxGeodeRobots = geodeRobots + minutesLeft / 2;
+    const maxPotentialGeodes = state.minerals[Mineral.Geode] + maxGeodeRobots * minutesLeft;
+
+    if (maxPotentialGeodes < aoc.MostGeodes) {
+        // aoc.StateStack.pop();
+        // return;
+    }
+
+
+
+    //console.log(`Push ` +aoc.StateStack.length);
+
+    // Build your choice of robots
+
+    if (choice !== 'NONE') {
+        // build the robot and continue...  
+
+        BuildRobot(state.minerals, aoc.Blueprint.robots[choice].costs);
+    }
+
+
+
 
     // Collect    
     state.minerals[Mineral.Clay] += state.robots[Mineral.Clay];
@@ -136,25 +217,58 @@ function Choose() {
     state.minerals[Mineral.Obsidian] += state.robots[Mineral.Obsidian];
     state.minerals[Mineral.Ore] += state.robots[Mineral.Ore];
 
+    state.robots[choice]++;
+
+    if (state.minute === aoc.LastMinute) {
+        if (state.minerals[Mineral.Geode] > aoc.MostGeodes) {
+            aoc.MostGeodes = state.minerals[Mineral.Geode];
+            console.log(aoc.MostGeodes);
+        }
+        aoc.StateStack.pop();
+        return;
+    }
+
+    if (state.minerals[Mineral.Geode] > 0 && state.minute < aoc.EarliestGeodeRobot) {
+        aoc.EarliestGeodeRobot = state.minute;
+    }
+
+    if (state.minute >= aoc.EarliestGeodeRobot && state.robots[Mineral.Geode] === 0) {
+        aoc.StateStack.pop();
+        return; //?
+    }
+
+
+
     // Figure out available robots
 
-    const availableRobots = AvailableRobots(aoc.Blueprint, state.minerals);
+    let availableRobots = AvailableRobots(aoc.Blueprint, state.minerals);
+
+    
+
+    if (state.minerals[Mineral.Geode] === 0 && aoc.EarliestGeodeRobot === aoc.LastMinute) {
+        availableRobots = SortAvailable(availableRobots, state.robots);
+      
+    }
+    // sort?
+
+
+
+    //const backupMinerals = MineralObject(state.minerals);
+    //const backupMinute = state.minute;
 
     for (const choice of availableRobots) {
-        // build the robot and continue...  
+        // state.minerals = MineralObject(backupMinerals);
+        // state.minute = backupMinute;
+
+        Choose(choice);
 
     }
 
-    aoc.StateStack.push(state);
+    aoc.StateStack.pop(); // As the last thing we do?
 
-    console.log('choose');
+    //console.log(`Pop  ` +aoc.StateStack.length);
 
-
-
-
-
-    // Build Robots at the end of the minute
-
+    // console.log('popped'); // yay, stack overflow
 }
 
 
@@ -165,14 +279,23 @@ function Setup() {
 function Run(lastMinute) {
     aoc.LastMinute = lastMinute;
 
+    aoc.part1 =0;
+
+    let b  =1;
+
     for (const blueprint of aoc.Blueprints) {
 
         // Globabls outside of recursion
         aoc.Blueprint = blueprint;
-        aoc.StateStack = [new State()];        
+        aoc.StateStack = [new State()];
         aoc.MostGeodes = 0;
+        aoc.EarliestGeodeRobot = lastMinute;
 
         Choose();
+
+        aoc.part1 += (b*aoc.MostGeodes);
+        b++;
+
     }
 }
 
