@@ -4,7 +4,7 @@
   "description": "http://adventofcode.com solutions",
   "main": "index.js",
   "dependencies": {
-    "underscore": "^1.12.1"
+    "underscore": "^1.13.8"
   },
   "devDependencies": {},
   "scripts": {
